@@ -1,0 +1,22 @@
+{
+  "naming_type": "sequence",
+  "naming_prefix": "tester",
+  "tasks": [
+        {
+            "type": "script",
+            "payload": { "path": "/path/to/task.rb" },
+            "repeat": 1
+        },
+        {
+            "type": "inline",
+            "payload": { "inline": "echo \"hello world\"" },
+            "repeat": 0
+        }        
+    ],
+  "basebox": {
+    "type": "virtualbox",
+    "template_path": "/path/to/packer.json",
+    "box_path": "/path/to/file.box",
+    "rebuid": true
+  }
+}
