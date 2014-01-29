@@ -2,6 +2,7 @@
   "id": "b4781c8e-5be4-4b1c-b45b-c945d2143130"
   "naming_type": "sequence",
   "naming_prefix": "tester",
+  "instances": 10,
   "tasks": [
         {
             "type": "script",
