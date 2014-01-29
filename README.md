@@ -41,8 +41,8 @@ Use
 
 TBD
 
-*zerg inspect config.json*
-*zerg rush config.json*
+  - *zerg inspect config.json*
+  - *zerg rush config.json*
 
 [Vagrant]:http://wwww.vagrantup.com
 [Packer]:http://www.packer.io
