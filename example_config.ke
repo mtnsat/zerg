@@ -15,10 +15,9 @@
             "repeat": 0
         }        
     ],
-  "basebox": {
+  "vm": {
+    "driver": "vagrant",
     "type": "virtualbox",
-    "template_path": "/path/to/packer.json",
-    "box_path": "/path/to/file.box",
     "rebuid": true
   }
 }
