@@ -43,7 +43,7 @@
               "required": true
             },
             "repeat": {
-              "type": integer,
+              "type": "integer",
               "id": "com.mtnsat.zerg.json.ke.tasks.item.repeat",
               "required": true
             }

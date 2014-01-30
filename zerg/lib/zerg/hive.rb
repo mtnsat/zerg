@@ -44,7 +44,7 @@ module Zerg
             # iterate over hive configs and print out the names
             puts  "Current hive tasks are:"
 
-            if loaded == false
+            if instance.loaded == false
                 puts "No hive loaded!"
                 puts "FAILURE!"
                 return
@@ -71,7 +71,7 @@ module Zerg
             begin 
                 zerg_schema = JSON.parse( IO.read(File.join("#{File.dirname(__FILE__)}", "../../data/ke.schema")) )
             rescue JSON::ParserError => err
-                puts "ERROR: Could not parse #{zerg_schema}. Corrupt gem? Error: #{err.ai}"
+                puts "ERROR: Could not parse zerg schema file. Corrupt gem? Error: #{err.ai}"
                 return
             end
 

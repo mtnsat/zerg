@@ -9,7 +9,7 @@ module Zerg
             argument :instances, :type => :numeric, :required => false, :default => 1
             argument :driver, :type => :string, :required => false, :default => "vagrant"
             argument :type, :type => :string, :required => false, :default => "virtualbox"
-            argument :rebuid, :type => :string, :required => false, :default => "false"
+            argument :rebuild, :type => :string, :required => false, :default => "false"
             include Thor::Actions
 
             def self.source_root
@@ -17,7 +17,7 @@ module Zerg
             end
 
             def create_hive
-                if create_hive == "true"
+                if @create_hive == "true"
                     empty_directory "hive"
                 end
             end
