@@ -1,79 +1,129 @@
 {
   "type": "object",
-  "$schema": "http://json-schema.org/draft-03/schema",
   "id": "com.mtnsat.zerg.json.ke",
-  "required": true,
   "properties": {
     "naming_type": {
       "type": "string",
       "pattern": "^(sequence|unique)$",
-      "id": "com.mtnsat.zerg.json.ke.naming_type",
-      "required": true
+      "id": "com.mtnsat.zerg.json.ke.naming_type"
     },
     "naming_prefix": {
       "type": "string",
-      "id": "com.mtnsat.zerg.json.ke.naming_prefix",
-      "required": false
+      "id": "com.mtnsat.zerg.json.ke.naming_prefix"
     },
     "instances": {
       "type": "integer",
       "id": "com.mtnsat.zerg.json.ke.instances",
-      "minimum": 0,
-      "required": true
+      "minimum": 0
     },
     "tasks": {
       "type": "array",
       "id": "com.mtnsat.zerg.json.ke.tasks",
-      "required": true,
-      "properties": {
-        "items": {
-          "type": "object",
-          "id": "com.mtnsat.zerg.json.ke.tasks.item",
-          "required": false,
-          "properties": {
-            "type": {
-              "type": "string",
-              "pattern": "^(script|inline)$",
-              "id": "com.mtnsat.zerg.json.ke.tasks.item.type",
-              "required": true
-            },
-            "payload": {
-              "type": "string",
-              "id": "com.mtnsat.zerg.json.ke.tasks.item.payload",
-              "required": true
-            },
-            "repeat": {
-              "type": "integer",
-              "id": "com.mtnsat.zerg.json.ke.tasks.item.repeat",
-              "required": true
-            }
+      "minItems": 1,
+      "items": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "pattern": "^(script|inline)$",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.type"
+          },
+          "payload": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.payload"
+          },
+          "repeat": {
+            "type": "integer",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.repeat"
           }
-        }
+        },
+        "required": [
+            "type",
+            "payload",
+            "repeat"
+        ],
+        "additionalProperties": false
       }
     },
     "vm": {
       "type": "object",
       "id": "com.mtnsat.zerg.json.ke.vm",
-      "required": true,
       "properties": {
         "driver": {
-          "type": "string",
+          "type": "object",
           "id": "com.mtnsat.zerg.json.ke.vm.driver",
-          "pattern": "^(vagrant|docker)$",
-          "required": true
+          "properties": {
+            "drivertype": {
+              "type": "string",
+              "id": "com.mtnsat.zerg.json.ke.vm.driver.drivertype",
+              "pattern": "^(vagrant)$"
+            },
+            "path": {
+              "type": "string",
+              "id": "com.mtnsat.zerg.json.ke.vm.driver.path"
+            }
+          },
+          "required": [
+              "drivertype"
+          ],
+          "additionalProperties": false
         },
-        "type": {
-          "type": "string",
-          "id": "com.mtnsat.zerg.json.ke.vm.type",
-          "pattern": "^(virtualbox|kvm|lxc)$",
-          "required": true
+        "builder": {
+          "type": "object",
+          "id": "com.mtnsat.zerg.json.ke.vm.builder",
+          "properties": {
+            "buildertype": {
+              "type": "string",
+              "id": "com.mtnsat.zerg.json.ke.vm.builder.buildertype",
+              "pattern": "^(packer|url)$"
+            },
+            "imagetype": {
+              "type": "string",
+              "id": "com.mtnsat.zerg.json.ke.vm.builder.imagetype",
+              "pattern": "^(virtualbox|qemu|ami)$"
+            },
+            "builderpath": {
+              "type": "string",
+              "id": "com.mtnsat.zerg.json.ke.vm.builder.builderpath"
+            },
+            "rebuid": {
+              "type": "boolean",
+              "id": "com.mtnsat.zerg.json.ke.vm.builder.rebuid"
+            }
+          },
+          "required": [
+              "buildertype",
+              "imagetype",
+              "rebuid"
+          ],
+          "additionalProperties": false
         },
-        "rebuid": {
+        "private_network": {
           "type": "boolean",
-          "id": "com.mtnsat.zerg.json.ke.vm.rebuid",
-          "required": true
+          "id": "com.mtnsat.zerg.json.ke.vm.private_network"
+        },
+        "bridge_adapter": {
+          "type": "string",
+          "id": "com.mtnsat.zerg.json.ke.vm.bridge_adapter"
+        },
+        "bridge_description": {
+          "type": "string",
+          "id": "com.mtnsat.zerg.json.ke.vm.bridge_description"
         }
-      }
+      },
+      "required": [
+          "driver",
+          "builder",
+          "private_network"
+      ],
+      "additionalProperties": false
     }
-  }
+  },
+  "required": [
+      "naming_type",
+      "naming_prefix",
+      "instances",
+      "tasks",
+      "vm"
+  ],
+  "additionalProperties": false
 }
