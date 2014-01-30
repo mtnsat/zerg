@@ -41,6 +41,20 @@ Use
 
 TBD
 
+  - *zerg hive init*
+  - *zerg hive verify*
+  - *zerg hive list*
+  - *zerg status*
+  - *zerg rush [task]*
+  - *zerg stop [task]*
+
+
+Environment variables
+--------------
+
+  - HIVE_CWD - location of hive folder. If not defined - $(pwd)/hive
+  
+
 [Vagrant]:http://wwww.vagrantup.com
 [Packer]:http://www.packer.io
 [Chef Solo]:http://docs.opscode.com/chef_solo.html
