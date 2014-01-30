@@ -24,6 +24,10 @@ module Zerg
     end
 
     class CLI < Thor  
+        def self.exit_on_failure?
+            true
+        end
+
         desc "init", "initializes new hive"
         def init
             Zerg::Generators::HiveGen.start

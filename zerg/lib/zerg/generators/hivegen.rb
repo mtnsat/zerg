@@ -7,9 +7,12 @@ module Zerg
             argument :naming_type, :type => :string, :required => false, :default => "sequence"
             argument :naming_prefix, :type => :string, :required => false, :default => "zergling"
             argument :instances, :type => :numeric, :required => false, :default => 1
-            argument :driver, :type => :string, :required => false, :default => "vagrant"
-            argument :type, :type => :string, :required => false, :default => "virtualbox"
+            argument :driver_type, :type => :string, :required => false, :default => "vagrant"            
+            argument :builder_type, :type => :string, :required => false, :default => "url"
+            argument :image_type, :type => :string, :required => false, :default => "virtualbox"
+            argument :builder_path, :type => :string, :required => false, :default => "http://files.vagrantup.com/precise64.box"
             argument :rebuild, :type => :string, :required => false, :default => "false"
+            argument :private_network, :type => :string, :required => false, :default => "true"
             include Thor::Actions
 
             def self.source_root
@@ -18,7 +21,7 @@ module Zerg
 
             def create_hive
                 if @create_hive == "true"
-                    empty_directory "hive"
+                    empty_directory "builder"
                 end
             end
 

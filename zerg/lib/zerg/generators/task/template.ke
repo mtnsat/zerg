@@ -10,8 +10,15 @@
         }        
     ],
     "vm": {
-    "driver": "<%= driver %>",
-    "type": "<%= type %>",
-    "rebuid": <%= rebuild %>
+        "driver": {
+            "drivertype": "<%= driver_type %>"
+        },
+        "builder": {
+            "buildertype": "<%= builder_type %>",
+            "imagetype": "<%= image_type %>",
+            "path": "<% builder_path %>",
+            "rebuid": <%= rebuild %>
+        },
+        "private_network": <%= private_network %>
     }
 }
