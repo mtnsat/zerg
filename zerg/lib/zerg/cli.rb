@@ -30,7 +30,12 @@ module Zerg
 
         desc "init", "initializes new hive"
         def init
-            Zerg::Generators::HiveGen.start
+            puts Zerg::Generators::HiveGen.start
+        end
+
+        desc "rush [TASK]", "runs a task from hive"
+        def rush(task)
+            puts Zerg::Runner.rush(task)
         end
           
         register(HiveCLI, 'hive', 'hive [COMMAND]', 'Manage hive - a collection of task descriptions.')
