@@ -1,5 +1,4 @@
-require "zerg/version"
-require 'zerg/hive'
+require "zerg/hive"
 
 module Zerg
   # Your code goes here...
