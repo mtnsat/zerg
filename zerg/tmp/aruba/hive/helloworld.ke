@@ -1,0 +1,17 @@
+{
+    "naming_type": "sequence",
+    "naming_prefix": "zergling",
+    "instances": 1,
+    "tasks": [
+        {
+            "type": "inline",
+            "payload": { "inline": "echo \"ZERG RUSH!\"" },
+            "repeat": 1
+        }        
+    ],
+    "vm": {
+    "driver": "vagrant",
+    "type": "virtualbox",
+    "rebuid": false
+    }
+}

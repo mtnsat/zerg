@@ -1,5 +1,5 @@
 Feature: Hive
-    In order to verify, init or list hive configs
+    When I init, verify and list hive configs
     As a CLI
     I want to see success
 
@@ -27,11 +27,9 @@ Feature: Hive
                     }
                 }
                 """
-
-    Scenario: Verifying hive 
+ 
         When I run `zerg hive verify`
         Then the output should contain "SUCCESS!"
 
-    Scenario: Listing hive tasks
         When I run `zerg hive list`
         Then the output should contain "1 tasks in current hive:"

@@ -29,7 +29,7 @@ module Zerg
                 # do work on files ending in .rb in the desired directory
                 begin 
                     ke_file_hash = JSON.parse( IO.read(ke_file) )
-                    @hive[File.basename("ke_file", ".ke")] = ke_file_hash
+                    @hive[File.basename(ke_file, ".ke")] = ke_file_hash
                 rescue JSON::ParserError
                     puts "ERROR: Could not parse #{ke_file}. Run 'zerg hive verify' for more information."
                 end
@@ -50,13 +50,13 @@ module Zerg
                 return
             end
 
-            if @hive.empty?()
+            if instance.hive.empty?()
                 puts "No tasks defined in hive."
                 return
             end
 
-            puts "#{@hive.length} tasks in current hive:"
-            @hive.each { |k,v| puts "Task #{k} => #{v.ai}" }
+            puts "#{instance.hive.length} tasks in current hive:"
+            puts "#{instance.hive.keys.ai}"
         end
 
         def self.verify
@@ -66,22 +66,13 @@ module Zerg
                 return
             end
 
-            # load schema object
-            zerg_schema = nil
-            begin 
-                zerg_schema = JSON.parse( IO.read(File.join("#{File.dirname(__FILE__)}", "../../data/ke.schema")) )
-            rescue JSON::ParserError => err
-                puts "ERROR: Could not parse zerg schema file. Corrupt gem? Error: #{err.ai}"
-                return
-            end
-
             success = true
             Dir.glob(File.join("#{load_path}", "*.ke")) do |ke_file|
                 begin 
                     ke_file_hash = JSON.parse( IO.read(ke_file) )
 
                     # verify against schema.
-                    errors = JSON::Validator.fully_validate(zerg_schema, ke_file_hash, :errors_as_objects => true)
+                    errors = JSON::Validator.fully_validate(File.join("#{File.dirname(__FILE__)}", "../../data/ke.schema"), ke_file_hash, :errors_as_objects => true, :version => :draft3)
                     unless errors.empty?
                         puts "ERROR: #{ke_file} failed validation. Errors: #{errors.ai}"
                         success = false

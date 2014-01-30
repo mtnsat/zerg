@@ -4,6 +4,14 @@ require 'zerg/generators/hivegen'
 
 module Zerg
     class HiveCLI < Thor
+        
+        # hack (https://github.com/erikhuda/thor/issues/261#issuecomment-16880836)
+        # to get around thor showing klass name snake case in subcommand help (instead of subcommand name) 
+        package_name "hive"
+        def self.banner(command, namespace = nil, subcommand = false)
+            "#{basename} #{@package_name} #{command.usage}"
+        end
+
         desc "verify", "verifies hive tasks without loading them"
         def verify
             puts Zerg::Hive.verify
@@ -13,8 +21,6 @@ module Zerg
         def list
             puts Zerg::Hive.list
         end
-
-        register(Zerg::Generators::HiveGen, "init", "init", "initializes new hive")
     end
 
     class CLI < Thor  
@@ -22,8 +28,7 @@ module Zerg
         def init
             Zerg::Generators::HiveGen.start
         end
-              
-        desc "hive SUBCOMMAND", "manage hive - a collection of task descriptions"
-        subcommand "hive", HiveCLI
+          
+        register(HiveCLI, 'hive', 'hive [COMMAND]', 'Manage hive - a collection of task descriptions.')
     end
 end
