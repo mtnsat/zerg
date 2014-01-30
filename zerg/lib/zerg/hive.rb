@@ -17,9 +17,9 @@ module Zerg
                 return
             end
 
-            load_path = (ENV['HIVE_CWD'] == nil) ? File.join("#{Dir.pwd}", "hive") : File.join("#{ENV['HIVE_CWD']}", "hive")
+            load_path = (ENV['HIVE_CWD'] == nil) ? File.join("#{Dir.pwd}", ".hive") : File.join("#{ENV['HIVE_CWD']}", ".hive")
             if !File.directory?(load_path)
-                abort("ERROR: 'hive' not found at #{load_path}. Run 'zerg init', change HIVE_CWD or run zerg from a different path.")
+                abort("ERROR: '.hive' not found at #{load_path}. Run 'zerg init', change HIVE_CWD or run zerg from a different path.")
             end
 
             # load all .ke files into one big hash
@@ -59,9 +59,9 @@ module Zerg
         end
 
         def self.verify
-            load_path = (ENV['HIVE_CWD'] == nil) ? File.join("#{Dir.pwd}", "hive") : File.join("#{ENV['HIVE_CWD']}", "hive")
+            load_path = (ENV['HIVE_CWD'] == nil) ? File.join("#{Dir.pwd}", ".hive") : File.join("#{ENV['HIVE_CWD']}", ".hive")
             if !File.directory?(load_path)
-                abort("ERROR: 'hive' not found at #{load_path}. Run 'zerg init', change HIVE_CWD or run zerg from a different path.")
+                abort("ERROR: '.hive' not found at #{load_path}. Run 'zerg init', change HIVE_CWD or run zerg from a different path.")
                 return
             end
 

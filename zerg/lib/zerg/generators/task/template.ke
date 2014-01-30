@@ -1,24 +1,24 @@
 {
-    "naming_type": "<%= naming_type %>",
-    "naming_prefix": "<%= naming_prefix %>",
-    "instances": <%= instances %>,
+    "naming_type": "<%= config[:namingtype] %>",
+    "naming_prefix": "<%= config[:namingprefix] %>",
+    "instances": <%= config[:instances] %>,
     "tasks": [
         {
             "type": "inline",
-            "payload": { "inline": "echo \"ZERG RUSH!\"" },
+            "payload": "echo \"ZERG RUSH!\"",
             "repeat": 1
         }        
     ],
     "vm": {
         "driver": {
-            "drivertype": "<%= driver_type %>"
+            "drivertype": "<%= config[:drivertype] %>"
         },
         "builder": {
-            "buildertype": "<%= builder_type %>",
-            "imagetype": "<%= image_type %>",
-            "path": "<% builder_path %>",
-            "rebuid": <%= rebuild %>
+            "buildertype": "<%= config[:buildertype] %>",
+            "imagetype": "<%= config[:imagetype] %>",
+            "builderpath": "<%= config[:builderpath] %>",
+            "rebuid": <%= config[:rebuild] %>
         },
-        "private_network": <%= private_network %>
+        "private_network": <%= config[:privatenetwork] %>
     }
 }

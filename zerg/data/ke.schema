@@ -1,8 +1,6 @@
 {
   "type": "object",
-  "$schema": "http://json-schema.org/draft-04/schema",
   "id": "com.mtnsat.zerg.json.ke",
-  "required": true,
   "properties": {
     "naming_type": {
       "type": "string",
@@ -20,36 +18,31 @@
     },
     "tasks": {
       "type": "array",
-      "id": "com.mtnsat.zerg.json.ke.tasks"
+      "id": "com.mtnsat.zerg.json.ke.tasks",
       "minItems": 1,
-      "properties": {
-        "items": {
-          "type": "object",
-          "id": "com.mtnsat.zerg.json.ke.tasks.item"
-          "properties": {
-            "type": {
-              "type": "string",
-              "pattern": "^(script|inline)$",
-              "id": "com.mtnsat.zerg.json.ke.tasks.item.type"
-            },
-            "payload": {
-              "type": "string",
-              "id": "com.mtnsat.zerg.json.ke.tasks.item.payload"
-            },
-            "repeat": {
-              "type": "integer",
-              "id": "com.mtnsat.zerg.json.ke.tasks.item.repeat"
-            }
+      "items": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "pattern": "^(script|inline)$",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.type"
           },
-          "required": [
-              "type",
-              "payload",
-              "repeat"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
+          "payload": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.payload"
+          },
+          "repeat": {
+            "type": "integer",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.repeat"
+          }
+        },
+        "required": [
+            "type",
+            "payload",
+            "repeat"
+        ],
+        "additionalProperties": false
+      }
     },
     "vm": {
       "type": "object",
@@ -58,7 +51,6 @@
         "driver": {
           "type": "object",
           "id": "com.mtnsat.zerg.json.ke.vm.driver",
-          "required": true,
           "properties": {
             "drivertype": {
               "type": "string",
@@ -88,6 +80,10 @@
               "type": "string",
               "id": "com.mtnsat.zerg.json.ke.vm.builder.imagetype",
               "pattern": "^(virtualbox|qemu|ami)$"
+            },
+            "builderpath": {
+              "type": "string",
+              "id": "com.mtnsat.zerg.json.ke.vm.builder.builderpath"
             },
             "rebuid": {
               "type": "boolean",
