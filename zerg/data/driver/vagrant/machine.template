@@ -1,10 +1,7 @@
-
-    # define the machine name, based on an environment variable
+    # define the machine name
     config.vm.define "<%= machine_name %>" do |<%= machine_name %>|
         <%= machine_name %>.vm.box = "<%= machine_name %>"
-
         <%= bridge_specifics %>
-
         # setup private network 
         config.vm.network :private_network, ip: "192.168.50.<%= last_octet %>"
 
@@ -12,9 +9,9 @@
         tasks = <%= tasks_array %>
         tasks.each { |task| 
             if task["type"] == "inline"
-                <%= machine_name_snakecase %>.vm.provision "shell", inline: "#{task['payload']}"
+                <%= machine_name %>.vm.provision "shell", inline: "#{task['payload']}"
             elsif task["type"] == "script"
-                <%= machine_name_snakecase %>.vm.provision "shell" do |s|   
+                <%= machine_name %>.vm.provision "shell" do |s|   
                     s.path = "#{task['payload']}"
                     s.privileged = false
                     s.args = "#{task['parameters']}" unless task.has_key?(parameters) 
