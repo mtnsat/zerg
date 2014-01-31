@@ -1,0 +1,53 @@
+Vagrant.configure(2) do |config|    
+  config.vm.provider "virtualbox" do |v|
+    v.gui = false
+    v.customize ["modifyvm", :id, "--memory", "<%= ram_per_vm %>"]
+
+    # adjust for DNS weirdness in ubuntu 12.04
+    v.customize ["modifyvm", :id,  "--natdnsproxy1", "off"]
+    v.customize ["modifyvm", :id,  "--natdnshostresolver1", "off"]
+
+    # set virtio type on the NIC driver. Better performance for large traffic bursts
+    v.customize ["modifyvm", :id,  "--nictype1", "virtio"]
+    v.customize ["modifyvm", :id,  "--nictype2", "virtio"]
+    v.customize ["modifyvm", :id,  "--nictype3", "virtio"]
+  end
+
+  config.vagrant.host = :detect
+  config.vm.box_url = "<%= basebox_path %>"
+  config.vm.boot_timeout = 300
+  config.vm.graceful_halt_timeout = 60
+  # TODO: add synced folders
+
+
+  # define the machine name, based on an environemtn variable
+  config.vm.define ENV['ZERG_MACHINE_NAME'] do |tester_box|
+
+    # if bridging is enabled, set that up.
+    do_bridging = <%= do_bridging %>
+    if do_bridging == true
+      config.vm.network :public_network, :bridge => "<%= bridged_eth_description %>", :mac => ENV['ZERG_MACHINE_MAC'], :use_dhcp_assigned_default_route => true
+    end
+
+    # if private netrworking is enabled - set that up as well.
+    do_private_network = <%= do_private_network %>
+    if do_private_network == true
+      last_octet = (ENV['ZERG_OCTET_OFFSET'] == nil) ? 4 : ENV['LAST_OCTET_OFFSET'].to_i + 4 
+      config.vm.network :private_network, ip: "192.168.50.#{last_octet}"
+    end
+
+    # provisioning
+    tasks = <%= tasks_array %>
+    tasks.each { |task| 
+      if task["type"] == "inline"
+        tester_box.vm.provision "shell", inline: "#{task['payload']}"
+      elsif task["type"] == "script"
+        tester_box.vm.provision "shell" do |s|   
+          s.path = "#{task['payload']}"
+          s.privileged = false
+          s.args = "#{task['parameters']}" unless task.has_key?(parameters) 
+        end
+      end 
+    }
+  end
+end

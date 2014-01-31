@@ -16,6 +16,11 @@
       "id": "com.mtnsat.zerg.json.ke.instances",
       "minimum": 0
     },
+    "ram_per_vm": {
+      "type": "integer",
+      "id": "com.mtnsat.zerg.json.ke.ram_per_vm",
+      "minimum": 256
+    },
     "tasks": {
       "type": "array",
       "id": "com.mtnsat.zerg.json.ke.tasks",
@@ -31,15 +36,14 @@
             "type": "string",
             "id": "com.mtnsat.zerg.json.ke.tasks.item.payload"
           },
-          "repeat": {
-            "type": "integer",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.repeat"
+          "parameters": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.parameters"
           }
         },
         "required": [
             "type",
-            "payload",
-            "repeat"
+            "payload"
         ],
         "additionalProperties": false
       }
@@ -122,6 +126,7 @@
       "naming_type",
       "naming_prefix",
       "instances",
+      "ram_per_vm",
       "tasks",
       "vm"
   ],

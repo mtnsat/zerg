@@ -19,6 +19,7 @@ module Zerg
                     :namingtype => "sequence",
                     :namingprefix => "zergling",
                     :instances => 1,
+                    :rampervm => 256,
                     :drivertype => "vagrant",           
                     :buildertype => "url",
                     :imagetype => "virtualbox",
