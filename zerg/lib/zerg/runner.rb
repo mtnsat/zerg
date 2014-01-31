@@ -23,8 +23,15 @@ module Zerg
             # TODO: render builder template and run it if required
 
             # render driver template
-            renderer = DriverRenderer.new(task["vm"]["driver"], "hrbghrlghrl", taskname)
-            render.render
+            renderer = DriverRenderer.new(
+                task["vm"]["driver"], 
+                "hrbghrlghrl", 
+                taskname, 
+                task["ram_per_vm"], 
+                task["instances"], 
+                task["tasks"])
+            
+            renderer.render
         end
 
 

@@ -9,7 +9,7 @@
     ],
     "vm": {
         "driver": {
-            "drivertype": "<%= config[:drivertype] %>"
+            "drivertype": "<%= config[:drivertype] %>",
             "providertype": "<%= config[:providertype] %>"
         },
         "builder": {

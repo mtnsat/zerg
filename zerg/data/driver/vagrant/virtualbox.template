@@ -1,11 +1,11 @@
-v.gui = false
-v.memory = <%= ram_per_vm %>
+        v.gui = false
+        v.memory = <%= ram_per_vm %>
 
-# adjust for DNS weirdness in ubuntu 12.04
-v.customize ["modifyvm", :id,  "--natdnsproxy1", "off"]
-v.customize ["modifyvm", :id,  "--natdnshostresolver1", "off"]
+        # adjust for DNS weirdness in ubuntu 12.04
+        v.customize ["modifyvm", :id,  "--natdnsproxy1", "off"]
+        v.customize ["modifyvm", :id,  "--natdnshostresolver1", "off"]
 
-# set virtio type on the NIC driver. Better performance for large traffic bursts
-v.customize ["modifyvm", :id,  "--nictype1", "virtio"]
-v.customize ["modifyvm", :id,  "--nictype2", "virtio"]
-v.customize ["modifyvm", :id,  "--nictype3", "virtio"]
+        # set virtio type on the NIC driver. Better performance for large traffic bursts
+        v.customize ["modifyvm", :id,  "--nictype1", "virtio"]
+        v.customize ["modifyvm", :id,  "--nictype2", "virtio"]
+        v.customize ["modifyvm", :id,  "--nictype3", "virtio"]
