@@ -1,0 +1,29 @@
+
+# define the machine name, based on an environment variable
+config.vm.define "<%= machine_name %>" do |<%= machine_name %>|
+    <%= machine_name %>.vm.box = "<%= machine_name %>"
+
+    # if bridging is enabled, set that up.
+    do_bridging = <%= do_bridging %>
+    if do_bridging == true
+        config.vm.network :public_network, :bridge => "<%= bridged_eth_description %>", :mac => <%= machine_mac %>, :use_dhcp_assigned_default_route => true
+    end
+
+    # setup private network
+    last_octet = <%= octet_offset %> + 4 
+    config.vm.network :private_network, ip: "192.168.50.#{last_octet}"
+
+    # provisioning
+    tasks = <%= tasks_array %>
+    tasks.each { |task| 
+        if task["type"] == "inline"
+            <%= machine_name_snakecase %>.vm.provision "shell", inline: "#{task['payload']}"
+        elsif task["type"] == "script"
+            <%= machine_name_snakecase %>.vm.provision "shell" do |s|   
+                s.path = "#{task['payload']}"
+                s.privileged = false
+                s.args = "#{task['parameters']}" unless task.has_key?(parameters) 
+            end
+        end 
+    }
+end

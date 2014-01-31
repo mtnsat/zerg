@@ -1,0 +1,3 @@
+config.vm.provider "<%= provider %>" do |v|
+    <%= provider_specifics %>
+end

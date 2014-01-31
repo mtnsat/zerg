@@ -1,6 +1,4 @@
 {
-    "naming_type": "<%= config[:namingtype] %>",
-    "naming_prefix": "<%= config[:namingprefix] %>",
     "instances": <%= config[:instances] %>,
     "ram_per_vm": <%= config[:rampervm] %>,
     "tasks": [
@@ -12,6 +10,7 @@
     "vm": {
         "driver": {
             "drivertype": "<%= config[:drivertype] %>"
+            "providertype": "<%= config[:providertype] %>"
         },
         "builder": {
             "buildertype": "<%= config[:buildertype] %>",

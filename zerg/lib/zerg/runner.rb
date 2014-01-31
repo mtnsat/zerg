@@ -1,6 +1,6 @@
 require 'awesome_print'
-require 'json-schema'
 require 'fileutils'
+require 'erb'
 
 module Zerg
     class Runner
@@ -17,9 +17,16 @@ module Zerg
           return nil
         end
 
-        def parse(taskname, task)
-            puts ("Will perform task #{task.ai} with contents:\n #{task.ai}")
+        def process(taskname, task)
+            puts ("Will perform task #{taskname} with contents:\n #{task.ai}")
+
+            # TODO: render builder template and run it if required
+
+            # render driver template
+            renderer = DriverRenderer.new(task["vm"]["driver"], "hrbghrlghrl", taskname)
+            render.render
         end
+
 
         def self.rush(task)
             # load the hive first
@@ -30,7 +37,7 @@ module Zerg
 
             # grab the current task hash and parse it out
             runner = Runner.new
-            runner.parse(task, Zerg::Hive.instance.hive[task]);
+            runner.process(task, Zerg::Hive.instance.hive[task]);
         end
     end
 end

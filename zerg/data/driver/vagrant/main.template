@@ -1,0 +1,11 @@
+Vagrant.configure(2) do |config|    
+  <%= provider_section %>
+
+  config.vagrant.host = :detect
+  config.vm.box_url = "<%= basebox_path %>"
+  config.vm.boot_timeout = 300
+  config.vm.graceful_halt_timeout = 60
+  # TODO: add synced folders
+
+  <%= vm_defines %>
+end

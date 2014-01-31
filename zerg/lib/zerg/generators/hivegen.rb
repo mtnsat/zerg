@@ -16,11 +16,10 @@ module Zerg
 
             def copy_sample_task
                 opts = {
-                    :namingtype => "sequence",
-                    :namingprefix => "zergling",
-                    :instances => 1,
+                    :instances => 3,
                     :rampervm => 256,
-                    :drivertype => "vagrant",           
+                    :drivertype => "vagrant",
+                    :providertype => "virtualbox",           
                     :buildertype => "url",
                     :imagetype => "virtualbox",
                     :builderpath => "http://files.vagrantup.com/precise64.box",

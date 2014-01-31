@@ -2,15 +2,6 @@
   "type": "object",
   "id": "com.mtnsat.zerg.json.ke",
   "properties": {
-    "naming_type": {
-      "type": "string",
-      "pattern": "^(sequence|unique)$",
-      "id": "com.mtnsat.zerg.json.ke.naming_type"
-    },
-    "naming_prefix": {
-      "type": "string",
-      "id": "com.mtnsat.zerg.json.ke.naming_prefix"
-    },
     "instances": {
       "type": "integer",
       "id": "com.mtnsat.zerg.json.ke.instances",
@@ -61,13 +52,23 @@
               "id": "com.mtnsat.zerg.json.ke.vm.driver.drivertype",
               "pattern": "^(vagrant)$"
             },
+            "providertype": {
+              "type": "string",
+              "id": "com.mtnsat.zerg.json.ke.vm.driver.providertype",
+              "pattern": "^(virtualbox|aws)$"
+            },
             "path": {
               "type": "string",
               "id": "com.mtnsat.zerg.json.ke.vm.driver.path"
+            },
+            "bridge_nic": {
+              "type": "string",
+              "id": "com.mtnsat.zerg.json.ke.vm.driver.bridge_nic"
             }
           },
           "required": [
-              "drivertype"
+              "drivertype",
+              "providertype"
           ],
           "additionalProperties": false
         },
@@ -83,7 +84,7 @@
             "imagetype": {
               "type": "string",
               "id": "com.mtnsat.zerg.json.ke.vm.builder.imagetype",
-              "pattern": "^(virtualbox|qemu|ami)$"
+              "pattern": "^(virtualbox|ami)$"
             },
             "builderpath": {
               "type": "string",
@@ -123,8 +124,6 @@
     }
   },
   "required": [
-      "naming_type",
-      "naming_prefix",
       "instances",
       "ram_per_vm",
       "tasks",
