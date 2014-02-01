@@ -25,15 +25,66 @@ module Zerg
             # render driver template
             renderer = DriverRenderer.new(
                 task["vm"]["driver"], 
-                "hrbghrlghrl", 
+                task["vm"]["builder"]["builderpath"], # TODO: this should change based on what builder output is
                 taskname, 
                 task["ram_per_vm"], 
                 task["instances"], 
                 task["tasks"])
             
             renderer.render
+            run(taskname, task["instances"])
         end
 
+        def run(taskname, instances)
+            # TODO: generalize to multiple drivers
+            abort("ERROR: Vagrant not installed!") unless which("vagrant") != nil
+
+            # bring up all of the VMs first.
+            puts("Starting vagrant in #{File.join("#{Dir.pwd}", ".hive", "driver", taskname)}")
+            create_pid = Process.spawn(
+                {
+                    "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
+                },
+                "vagrant up --no-provision"
+            )
+            Process.wait(create_pid)
+            abort("ERROR: vagrant failed!") unless $?.exitstatus == 0
+
+            puts("Running tasks in vagrant virtual machines...")
+            # and provision them all at once (sort of)
+            provisioners = Array.new
+            provision_pid = nil
+            for index in 0..instances - 1
+                provision_pid = Process.spawn(
+                    {
+                        "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
+                    },
+                    "vagrant provision zergling_#{index}")
+                provisioners.push({:name => "zergling_#{index}", :pid => provision_pid})
+            end
+
+            # wait for everything to finish...
+            provisioners.each { |provisioner| 
+                Thread.new { 
+                    Process.wait(provisioner[:pid]);     
+                }.join 
+            }
+
+            puts("DONE! Halting all vagrant virtual machines...")
+            # halt all machines
+            halt_pid = nil
+            for index in 0..instances - 1
+                halt_pid = Process.spawn(
+                    {
+                        "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
+                    },
+                    "vagrant halt zergling_#{index}")
+                Process.wait(halt_pid)
+                abort("ERROR: vagrant halt failed on machine zergling_#{index}!") unless $?.exitstatus == 0
+            end
+
+            puts("SUCCESS!")
+        end
 
         def self.rush(task)
             # load the hive first

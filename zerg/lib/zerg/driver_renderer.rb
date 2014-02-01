@@ -36,7 +36,6 @@ module Zerg
             puts ("Rendering driver templates...")
 
             # TODO: generalize this processing better
-            ap @task
             abort("ERROR: Driver type '#{@driver["drivertype"]} is not supported.") unless (@driver["drivertype"] == "vagrant")
 
             # load the template files
@@ -69,7 +68,7 @@ module Zerg
             # render machine template
             all_macs = Array.new
             all_machines = ""
-            for index in 0..@instances
+            for index in 0..@instances - 1
 
                 # last ip octet offset for host only networking
                 ip_octet_offset = index
