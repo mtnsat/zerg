@@ -14,7 +14,7 @@
                 <%= machine_name %>.vm.provision "shell" do |s|   
                     s.path = "#{task['payload']}"
                     s.privileged = false
-                    s.args = "#{task['parameters']}" unless task.has_key?(parameters) 
+                    s.args = "#{task['parameters']}" unless !task.has_key?('parameters') 
                 end
             end 
         }
