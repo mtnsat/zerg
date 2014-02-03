@@ -37,6 +37,11 @@ module Zerg
         def rush(task)
             puts Zerg::Runner.rush(task)
         end
+
+        desc "clean [TASK]", "cleans a task"
+        def clean(task)
+            puts Zerg::Runner.clean(task)
+        end
           
         register(HiveCLI, 'hive', 'hive [COMMAND]', 'Manage hive - a collection of task descriptions.')
     end
