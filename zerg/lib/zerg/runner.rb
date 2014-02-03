@@ -35,19 +35,29 @@ module Zerg
             run(taskname, task["instances"])
         end
 
-        def cleanup(taskname, instances)
+        def cleanup(taskname, task)
+            abort("ERROR: Vagrant not installed!") unless which("vagrant") != nil
             puts ("Will cleanup task #{taskname}...")
 
             # TODO: generalize for multiple drivers
+            # render driver template
+            renderer = DriverRenderer.new(
+                task["vm"]["driver"], 
+                task["vm"]["basebox"], 
+                taskname, 
+                task["ram_per_vm"], 
+                task["instances"], 
+                task["tasks"])            
+            renderer.render
 
             # run vagrant cleanup
             cleanup_pid = nil
-            for index in 0..instances - 1
+            for index in 0..task["instances"] - 1
                 cleanup_pid = Process.spawn(
                     {
                         "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
                     },
-                    "vagrant destroy zergling_#{index} --force")
+                    "vagrant box remove zergling_#{index}; vagrant destroy zergling_#{index} --force")
                 Process.wait(cleanup_pid)
                 abort("ERROR: vagrant failed!") unless $?.exitstatus == 0
             end
@@ -123,9 +133,8 @@ module Zerg
             puts "Loaded hive. Looking for task #{task}..."
             abort("ERROR: Task #{task} not found in current hive!") unless Zerg::Hive.instance.hive.has_key?(task) 
 
-            # grab the current task hash and parse it out
             runner = Runner.new
-            runner.cleanup(task, Zerg::Hive.instance.hive[task]["instances"]);
+            runner.cleanup(task, Zerg::Hive.instance.hive[task]);
             puts("SUCCESS!")
         end
     end

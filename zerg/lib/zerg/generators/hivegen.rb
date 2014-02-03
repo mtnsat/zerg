@@ -17,13 +17,9 @@ module Zerg
             def copy_sample_task
                 opts = {
                     :instances => 3,
-                    :rampervm => 256,
                     :drivertype => "vagrant",
-                    :providertype => "virtualbox",           
-                    :buildertype => "url",
-                    :imagetype => "virtualbox",
-                    :builderpath => "http://files.vagrantup.com/precise64.box",
-                    :rebuild => false,
+                    :providertype => "virtualbox",
+                    :baseboxpath => "http://files.vagrantup.com/precise64.box",
                     :privatenetwork => true
                 }
                 template("template.ke", ".hive/helloworld.ke", opts)

@@ -1,6 +1,5 @@
 {
     "instances": <%= config[:instances] %>,
-    "ram_per_vm": <%= config[:rampervm] %>,
     "tasks": [
         {
             "type": "inline",
@@ -10,14 +9,20 @@
     "vm": {
         "driver": {
             "drivertype": "<%= config[:drivertype] %>",
-            "providertype": "<%= config[:providertype] %>"
+            "providertype": "<%= config[:providertype] %>",
+            "provider_options": [
+                "config[:providertype].gui = false",
+                "config[:providertype].memory = 256",
+                "# adjust for DNS weirdness in ubuntu 12.04",
+                "config[:providertype].customize ['modifyvm', :id,  '--natdnsproxy1', 'off']",
+                "config[:providertype].customize ['modifyvm', :id,  '--natdnshostresolver1', 'off']",
+                "# set virtio type on the NIC driver. Better performance for large traffic bursts",
+                "config[:providertype].customize ['modifyvm', :id,  '--nictype1', 'virtio']"''
+                "config[:providertype].customize ['modifyvm', :id,  '--nictype2', 'virtio']",
+                "config[:providertype].customize ['modifyvm', :id,  '--nictype3', 'virtio']"
+            ]
         },
-        "builder": {
-            "buildertype": "<%= config[:buildertype] %>",
-            "imagetype": "<%= config[:imagetype] %>",
-            "builderpath": "<%= config[:builderpath] %>",
-            "rebuid": <%= config[:rebuild] %>
-        },
+        "basebox": "config[:baseboxpath]",
         "private_network": <%= config[:privatenetwork] %>
     }
 }

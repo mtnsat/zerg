@@ -44,10 +44,6 @@ module Zerg
             # load the provider top level template
             provider_parent_template = File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "data", "driver", "#{@driver["drivertype"]}", "provider.template"), 'r').read
 
-            # load the provider specifics template
-            abort("ERROR: Provider type '#{@driver["providertype"]} is not supported.") unless File.exist?(File.join("#{File.dirname(__FILE__)}", "..", "..", "data", "driver", "#{@driver["drivertype"]}", "#{@driver["providertype"]}.template"))
-            provider_template = File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "data", "driver", "#{@driver["drivertype"]}", "#{@driver["providertype"]}.template"), 'r').read
-
             # load the machine details template
             machine_template = File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "data", "driver", "#{@driver["drivertype"]}", "machine.template"), 'r').read
 
@@ -56,12 +52,18 @@ module Zerg
 
             # render templates....
             # render provider details to string
-            provider_string = Erbalize.erbalize_hash(provider_template, { :ram_per_vm => @ram })
+            # 
+            # render provider details into a string
+            provider_details_array = @driver["provider_options"]
+            provider_details = nil
+            for index in 0..provider_details_array.length - 1
+                provider_details += provider_details_array[index] + "\n"
+            end
 
             # render provider parent
             sources =  {
                 :provider => @driver["providertype"],
-                :provider_specifics => provider_string
+                :provider_specifics => provider_details
             }
             provider_parent_string = Erbalize.erbalize_hash(provider_parent_template, sources)
 
