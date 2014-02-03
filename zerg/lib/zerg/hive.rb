@@ -2,6 +2,7 @@ require 'json'
 require 'awesome_print'
 require 'json-schema'
 require 'fileutils'
+require 'singleton'
 
 module Zerg
     class Hive

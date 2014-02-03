@@ -1,17 +1,16 @@
 {
-    "naming_type": "<%= config[:namingtype] %>",
-    "naming_prefix": "<%= config[:namingprefix] %>",
     "instances": <%= config[:instances] %>,
+    "ram_per_vm": <%= config[:rampervm] %>,
     "tasks": [
         {
             "type": "inline",
-            "payload": "echo \"ZERG RUSH!\"",
-            "repeat": 1
+            "payload": "echo \"ZERG RUSH!\""
         }        
     ],
     "vm": {
         "driver": {
-            "drivertype": "<%= config[:drivertype] %>"
+            "drivertype": "<%= config[:drivertype] %>",
+            "providertype": "<%= config[:providertype] %>"
         },
         "builder": {
             "buildertype": "<%= config[:buildertype] %>",

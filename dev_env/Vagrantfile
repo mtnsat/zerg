@@ -64,6 +64,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       chef.add_recipe "virtualbox"
       chef.add_recipe "packer"
       chef.add_recipe "vagrant"
+      chef.add_recipe "git"
   
       # You may also specify custom JSON attributes:
       chef.json = { 
