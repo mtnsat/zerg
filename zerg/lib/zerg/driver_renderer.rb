@@ -101,7 +101,7 @@ module Zerg
                     sources = {
                         :last_octet => ip_octet_offset + 4, # TODO: this is probably specific to virtualbox networking
                     }
-                    bridge_section = Erbalize.erbalize_hash(bridge_template, sources)
+                    hostonly_section = Erbalize.erbalize_hash(hostonly_template, sources)
                 end
 
                 sources = {

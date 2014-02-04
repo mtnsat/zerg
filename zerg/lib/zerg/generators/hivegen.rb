@@ -31,7 +31,7 @@ module Zerg
                     :baseboxpath => "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box",
                     :privatenetwork => false
                 }
-                template("awstemplate.ke", ".hive/helloworld.ke", opts)
+                template("awstemplate.ke", ".hive/helloaws.ke", opts)
             end
         end
     end
