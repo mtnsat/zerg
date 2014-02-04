@@ -23,9 +23,8 @@ module Zerg
             return "#{firstChar}#{secondChar}#{restOfChars}"
         end
 
-        def initialize( vm, basebox_path, name, instances, tasks )
+        def initialize(vm, name, instances, tasks )
             @vm = vm
-            @boxpath = basebox_path
             @name = name
             @instances = instances
             @tasks = tasks
@@ -118,7 +117,7 @@ module Zerg
 
             sources = {
                 :provider_section => provider_parent_string,
-                :basebox_path => @boxpath,
+                :basebox_path => @vm["basebox"],
                 :vm_defines => all_machines 
             }
             full_template = Erbalize.erbalize_hash(main_template, sources)

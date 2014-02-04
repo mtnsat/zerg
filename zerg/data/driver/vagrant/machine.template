@@ -3,7 +3,6 @@
         <%= machine_name %>.vm.box = "<%= machine_name %>"
         <%= bridge_specifics %>
         <%= hostonly_specifics %>
-
         # provisioning
         tasks = <%= tasks_array %>
         tasks.each { |task| 

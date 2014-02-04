@@ -23,9 +23,7 @@ module Zerg
             # render driver template
             renderer = DriverRenderer.new(
                 task["vm"], 
-                task["vm"]["basebox"],
                 taskname, 
-                task["ram_per_vm"], 
                 task["instances"], 
                 task["tasks"])
             
@@ -41,11 +39,9 @@ module Zerg
             # render driver template
             renderer = DriverRenderer.new(
                 task["vm"], 
-                task["vm"]["basebox"], 
                 taskname, 
-                task["ram_per_vm"], 
                 task["instances"], 
-                task["tasks"])            
+                task["tasks"])        
             renderer.render
 
             # run vagrant cleanup
