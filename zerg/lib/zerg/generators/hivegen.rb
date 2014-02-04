@@ -9,12 +9,13 @@ module Zerg
             end
 
             def create_hive
-                empty_directory ".hive/builder"
-                empty_directory ".hive/driver"
-                empty_directory ".hive/basebox"
+                load_path = (ENV['HIVE_CWD'] == nil) ? File.join("#{Dir.pwd}", ".hive") : File.join("#{ENV['HIVE_CWD']}", ".hive")
+                empty_directory "#{File.join(load_path, "driver")}"
+                empty_directory "#{File.join(load_path, "basebox")}"
             end
 
             def copy_sample_task
+                load_path = (ENV['HIVE_CWD'] == nil) ? File.join("#{Dir.pwd}", ".hive") : File.join("#{ENV['HIVE_CWD']}", ".hive")
                 opts = {
                     :instances => 3,
                     :drivertype => "vagrant",
@@ -22,7 +23,7 @@ module Zerg
                     :baseboxpath => "http://files.vagrantup.com/precise64.box",
                     :privatenetwork => true
                 }
-                template("template.ke", ".hive/helloworld.ke", opts)
+                template("template.ke", "#{File.join(load_path, "helloworld.ke")}", opts)
 
                 opts = {
                     :instances => 3,
@@ -31,7 +32,7 @@ module Zerg
                     :baseboxpath => "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box",
                     :privatenetwork => false
                 }
-                template("awstemplate.ke", ".hive/helloaws.ke", opts)
+                template("awstemplate.ke", "#{File.join(load_path, "helloaws.ke")}", opts)
             end
         end
     end

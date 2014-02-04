@@ -4,11 +4,11 @@ Zerg
 Zerg is a tool for launching an arbitrary number of virtual machines and running a task on all of them at once. 
 
   - Intended for use on a linux host
-  - Mac users can test through another VM-based dev environment
-  - Written in ruby
+  - YMMV on OSX, however it is recommended you use the provided dev VM
   - JSON config files
-  - Supports vagrant virtual box and aws providers
+  - Supports vagrant virtualbox and vagrant-aws providers
   - planned support for more hypervisor orchestration tools and providers
+  - [Ruby] 1.9 required
 
 Version
 ----
@@ -23,7 +23,6 @@ Zerg uses a number of open source projects to work properly:
 * [Packer] - tool for building identical machine images from single source file
 * [Vagrant] - tool for building complete development environments
 * [Chef Solo] - Open source utility for using Opscode Chef cookbooks without access to a server
-* [Ruby] - Ruby programming language
 
 Develop (OSX)
 --------------
@@ -131,6 +130,22 @@ CLI help is available from the gem:
 
 ```
 zerg help
+```
+
+Environment variables
+--------------
+By default Zerg will look for '.hive' in the current directory. You can override this location by setting an enviroment variable:
+
+```
+export HIVE_CWD=/path/to/wherever/you/want
+```
+
+Tests
+--------------
+
+```
+cd zerg
+bundle exec cucumber features/
 ```
 
 [Vagrant]:http://wwww.vagrantup.com
