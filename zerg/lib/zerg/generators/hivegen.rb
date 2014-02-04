@@ -23,6 +23,15 @@ module Zerg
                     :privatenetwork => true
                 }
                 template("template.ke", ".hive/helloworld.ke", opts)
+
+                opts = {
+                    :instances => 3,
+                    :drivertype => "vagrant",
+                    :providertype => "aws",
+                    :baseboxpath => "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box",
+                    :privatenetwork => false
+                }
+                template("awstemplate.ke", ".hive/helloworld.ke", opts)
             end
         end
     end

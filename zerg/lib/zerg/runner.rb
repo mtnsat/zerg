@@ -93,7 +93,7 @@ module Zerg
                     {
                         "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
                     },
-                    "vagrant provision zergling_#{index} --provider=#{provider}")
+                    "vagrant provision zergling_#{index}")
                 provisioners.push({:name => "zergling_#{index}", :pid => provision_pid})
             end
 
