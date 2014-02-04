@@ -75,14 +75,19 @@ module Zerg
 
             # bring up all of the VMs first.
             puts("Starting vagrant in #{File.join("#{Dir.pwd}", ".hive", "driver", taskname)}")
-            create_pid = Process.spawn(
-                {
-                    "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
-                },
-                "vagrant up --no-provision --provider=#{provider}"
-            )
-            Process.wait(create_pid)
-            abort("ERROR: vagrant failed!") unless $?.exitstatus == 0
+            for index in 0..instances - 1
+                create_pid = Process.spawn(
+                    {
+                        "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
+                    },
+                    "vagrant up zergling_#{index} --no-provision --provider=#{provider}")
+                Process.wait(create_pid)
+                
+                if $?.exitstatus != 0
+                    clean(taskname)
+                    abort("ERROR: vagrant failed!")
+                end
+            end
 
             puts("Running tasks in vagrant virtual machines...")
             # and provision them all at once (sort of)
