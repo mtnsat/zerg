@@ -2,8 +2,7 @@
     config.vm.define "<%= machine_name %>" do |<%= machine_name %>|
         <%= machine_name %>.vm.box = "<%= machine_name %>"
         <%= bridge_specifics %>
-        # setup private network 
-        config.vm.network :private_network, ip: "192.168.50.<%= last_octet %>"
+        <%= hostonly_specifics %>
 
         # provisioning
         tasks = <%= tasks_array %>

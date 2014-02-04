@@ -20,19 +20,17 @@ module Zerg
         def process(taskname, task)
             puts ("Will perform task #{taskname} with contents:\n #{task.ai}")
 
-            # TODO: render builder template and run it if required
-
             # render driver template
             renderer = DriverRenderer.new(
-                task["vm"]["driver"], 
-                task["vm"]["builder"]["builderpath"], # TODO: this should change based on what builder output is
+                task["vm"], 
+                task["vm"]["basebox"],
                 taskname, 
                 task["ram_per_vm"], 
                 task["instances"], 
                 task["tasks"])
             
             renderer.render
-            run(taskname, task["instances"])
+            run(taskname, task["vm"]["driver"]["providertype"], task["instances"])
         end
 
         def cleanup(taskname, task)
@@ -42,7 +40,7 @@ module Zerg
             # TODO: generalize for multiple drivers
             # render driver template
             renderer = DriverRenderer.new(
-                task["vm"]["driver"], 
+                task["vm"], 
                 task["vm"]["basebox"], 
                 taskname, 
                 task["ram_per_vm"], 
@@ -63,9 +61,21 @@ module Zerg
             end
         end
 
-        def run(taskname, instances)
+        def run(taskname, provider, instances)
             # TODO: generalize to multiple drivers
             abort("ERROR: Vagrant not installed!") unless which("vagrant") != nil
+
+            # check plugin if correct plugin is present for aws
+            if provider == "aws"
+                aws_pid = Process.spawn("vagrant plugin list | grep vagrant-aws")
+                Process.wait(aws_pid)
+
+                if $?.exitstatus != 0
+                    aws_pid = Process.spawn("vagrant plugin install vagrant-aws")
+                    Process.wait(aws_pid)
+                    abort("ERROR: vagrant-aws installatio failed!") unless $?.exitstatus == 0
+                end
+            end
 
             # bring up all of the VMs first.
             puts("Starting vagrant in #{File.join("#{Dir.pwd}", ".hive", "driver", taskname)}")
@@ -73,7 +83,7 @@ module Zerg
                 {
                     "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
                 },
-                "vagrant up --no-provision"
+                "vagrant up --no-provision --provider=#{provider}"
             )
             Process.wait(create_pid)
             abort("ERROR: vagrant failed!") unless $?.exitstatus == 0
@@ -87,7 +97,7 @@ module Zerg
                     {
                         "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
                     },
-                    "vagrant provision zergling_#{index}")
+                    "vagrant provision zergling_#{index} --provider=#{provider}")
                 provisioners.push({:name => "zergling_#{index}", :pid => provision_pid})
             end
 

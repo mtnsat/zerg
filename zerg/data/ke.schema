@@ -77,10 +77,6 @@
           "type": "string",
           "id": "com.mtnsat.zerg.json.ke.vm.basebox"
         },
-        "bridge_adapter": {
-          "type": "string",
-          "id": "com.mtnsat.zerg.json.ke.vm.bridge_adapter"
-        },
         "bridge_description": {
           "type": "string",
           "id": "com.mtnsat.zerg.json.ke.vm.bridge_description"
@@ -96,7 +92,6 @@
   },
   "required": [
       "instances",
-      "ram_per_vm",
       "tasks",
       "vm"
   ],

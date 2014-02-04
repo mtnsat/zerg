@@ -23,11 +23,10 @@ module Zerg
             return "#{firstChar}#{secondChar}#{restOfChars}"
         end
 
-        def initialize( driver, basebox_path, name, ram, instances, tasks )
-            @driver = driver
+        def initialize( vm, basebox_path, name, instances, tasks )
+            @vm = vm
             @boxpath = basebox_path
             @name = name
-            @ram = ram
             @instances = instances
             @tasks = tasks
         end
@@ -36,33 +35,36 @@ module Zerg
             puts ("Rendering driver templates...")
 
             # TODO: generalize this processing better
-            abort("ERROR: Driver type '#{@driver["drivertype"]} is not supported.") unless (@driver["drivertype"] == "vagrant")
+            abort("ERROR: Driver type '#{@vm["driver"]["drivertype"]} is not supported.") unless (@vm["driver"]["drivertype"] == "vagrant")
 
             # load the template files
-            main_template = File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "data", "driver", "#{@driver["drivertype"]}", "main.template"), 'r').read
+            main_template = File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "data", "driver", "#{@vm["driver"]["drivertype"]}", "main.template"), 'r').read
 
             # load the provider top level template
-            provider_parent_template = File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "data", "driver", "#{@driver["drivertype"]}", "provider.template"), 'r').read
+            provider_parent_template = File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "data", "driver", "#{@vm["driver"]["drivertype"]}", "provider.template"), 'r').read
 
             # load the machine details template
-            machine_template = File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "data", "driver", "#{@driver["drivertype"]}", "machine.template"), 'r').read
+            machine_template = File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "data", "driver", "#{@vm["driver"]["drivertype"]}", "machine.template"), 'r').read
 
             # load the bridge details template
-            bridge_template = File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "data", "driver", "#{@driver["drivertype"]}", "bridging.template"), 'r').read
+            bridge_template = File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "data", "driver", "#{@vm["driver"]["drivertype"]}", "bridging.template"), 'r').read
+
+            # load the host only network details template
+            hostonly_template = File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "data", "driver", "#{@vm["driver"]["drivertype"]}", "hostonly.template"), 'r').read
 
             # render templates....
             # render provider details to string
             # 
             # render provider details into a string
-            provider_details_array = @driver["provider_options"]
-            provider_details = nil
+            provider_details_array = @vm["driver"]["provider_options"]
+            provider_details = ""
             for index in 0..provider_details_array.length - 1
-                provider_details += provider_details_array[index] + "\n"
+                provider_details += "\t\t" + provider_details_array[index] + "\n"
             end
 
             # render provider parent
             sources =  {
-                :provider => @driver["providertype"],
+                :provider => @vm["driver"]["providertype"],
                 :provider_specifics => provider_details
             }
             provider_parent_string = Erbalize.erbalize_hash(provider_parent_template, sources)
@@ -80,7 +82,7 @@ module Zerg
 
                 # do we need the bridging template as well?
                 bridge_section = nil
-                if @driver.has_key?("bridge_nic")
+                if @vm.has_key?("bridge_description")
                     # mac address to use?
                     new_mac = ""
                     begin
@@ -89,16 +91,24 @@ module Zerg
 
                     sources = {
                         :machine_mac => new_mac,
-                        :bridged_eth_description => @driver["bridge_nic"]
+                        :bridged_eth_description => @vm["bridge_description"]
+                    }
+                    bridge_section = Erbalize.erbalize_hash(bridge_template, sources)
+                end
+
+                # do we need the host only template as well?
+                hostonly_section = nil
+                if @vm["private_network"] == true
+                    sources = {
+                        :last_octet => ip_octet_offset + 4, # TODO: this is probably specific to virtualbox networking
                     }
                     bridge_section = Erbalize.erbalize_hash(bridge_template, sources)
                 end
 
                 sources = {
                     :machine_name => "zergling_#{index}",
-                    :bridged_eth_description => @driver.has_key?("bridge_nic") ? @driver["bridge_nic"] : nil, 
                     :bridge_specifics => bridge_section,
-                    :last_octet => ip_octet_offset + 4, # TODO: this is probably specific to virtualbox networking
+                    :hostonly_specifics => hostonly_section,
                     :tasks_array => tasks_array
                 }.delete_if { |k, v| v.nil? }
 
