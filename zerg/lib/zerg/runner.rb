@@ -51,7 +51,7 @@ module Zerg
                     {
                         "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
                     },
-                    "vagrant box remove zergling_#{index}; vagrant destroy zergling_#{index} --force")
+                    "vagrant box remove zergling_#{index} #{task["vm"]["driver"]["providertype"]}; vagrant destroy zergling_#{index} --force")
                 Process.wait(cleanup_pid)
                 abort("ERROR: vagrant failed!") unless $?.exitstatus == 0
             end
@@ -69,20 +69,25 @@ module Zerg
                 if $?.exitstatus != 0
                     aws_pid = Process.spawn("vagrant plugin install vagrant-aws")
                     Process.wait(aws_pid)
-                    abort("ERROR: vagrant-aws installatio failed!") unless $?.exitstatus == 0
+                    abort("ERROR: vagrant-aws installation failed!") unless $?.exitstatus == 0
                 end
             end
 
             # bring up all of the VMs first.
             puts("Starting vagrant in #{File.join("#{Dir.pwd}", ".hive", "driver", taskname)}")
-            create_pid = Process.spawn(
-                {
-                    "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
-                },
-                "vagrant up --no-provision --provider=#{provider}"
-            )
-            Process.wait(create_pid)
-            abort("ERROR: vagrant failed!") unless $?.exitstatus == 0
+            for index in 0..instances - 1
+                create_pid = Process.spawn(
+                    {
+                        "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
+                    },
+                    "vagrant up zergling_#{index} --no-provision --provider=#{provider}")
+                Process.wait(create_pid)
+                
+                if $?.exitstatus != 0
+                    clean(taskname)
+                    abort("ERROR: vagrant failed!")
+                end
+            end
 
             puts("Running tasks in vagrant virtual machines...")
             # and provision them all at once (sort of)
@@ -98,9 +103,14 @@ module Zerg
             end
 
             # wait for everything to finish...
+            errors = Array.new
+            lock = Mutex.new
             provisioners.each { |provisioner| 
                 Thread.new { 
-                    Process.wait(provisioner[:pid]);     
+                    Process.wait(provisioner[:pid]); 
+                    lock.synchronize do
+                        errors.push(provisioner[:name]) unless $?.exitstatus == 0    
+                    end
                 }.join 
             }
 
@@ -117,6 +127,7 @@ module Zerg
                 abort("ERROR: vagrant halt failed on machine zergling_#{index}!") unless $?.exitstatus == 0
             end
 
+            abort("ERROR: Finished with errors in: #{errors.to_s}") unless errors.length == 0
             puts("SUCCESS!")
         end
 
