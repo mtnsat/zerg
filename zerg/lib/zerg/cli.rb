@@ -21,6 +21,12 @@ module Zerg
         def list
             puts Zerg::Hive.list
         end
+
+        desc "get [FILE] [--force]", "import a .ke file into the hive folder"
+        option :force, :type => :boolean
+        def get(file)
+            puts Zerg::Hive.get(file, options[:force])
+        end
     end
 
     class CLI < Thor  

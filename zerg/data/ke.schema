@@ -57,48 +57,15 @@
               "id": "com.mtnsat.zerg.json.ke.vm.driver.providertype",
               "pattern": "^(virtualbox|aws)$"
             },
-            "path": {
-              "type": "string",
-              "id": "com.mtnsat.zerg.json.ke.vm.driver.path"
-            },
-            "bridge_nic": {
-              "type": "string",
-              "id": "com.mtnsat.zerg.json.ke.vm.driver.bridge_nic"
+            "provider_options": {
+              "type": "array",
+              "id": "com.mtnsat.zerg.json.ke.vm.driver.provider_options"
             }
           },
           "required": [
               "drivertype",
-              "providertype"
-          ],
-          "additionalProperties": false
-        },
-        "builder": {
-          "type": "object",
-          "id": "com.mtnsat.zerg.json.ke.vm.builder",
-          "properties": {
-            "buildertype": {
-              "type": "string",
-              "id": "com.mtnsat.zerg.json.ke.vm.builder.buildertype",
-              "pattern": "^(packer|url)$"
-            },
-            "imagetype": {
-              "type": "string",
-              "id": "com.mtnsat.zerg.json.ke.vm.builder.imagetype",
-              "pattern": "^(virtualbox|ami)$"
-            },
-            "builderpath": {
-              "type": "string",
-              "id": "com.mtnsat.zerg.json.ke.vm.builder.builderpath"
-            },
-            "rebuid": {
-              "type": "boolean",
-              "id": "com.mtnsat.zerg.json.ke.vm.builder.rebuid"
-            }
-          },
-          "required": [
-              "buildertype",
-              "imagetype",
-              "rebuid"
+              "providertype",
+              "provider_options"
           ],
           "additionalProperties": false
         },
@@ -106,9 +73,9 @@
           "type": "boolean",
           "id": "com.mtnsat.zerg.json.ke.vm.private_network"
         },
-        "bridge_adapter": {
+        "basebox": {
           "type": "string",
-          "id": "com.mtnsat.zerg.json.ke.vm.bridge_adapter"
+          "id": "com.mtnsat.zerg.json.ke.vm.basebox"
         },
         "bridge_description": {
           "type": "string",
@@ -117,15 +84,14 @@
       },
       "required": [
           "driver",
-          "builder",
-          "private_network"
+          "private_network",
+          "basebox"
       ],
       "additionalProperties": false
     }
   },
   "required": [
       "instances",
-      "ram_per_vm",
       "tasks",
       "vm"
   ],
