@@ -2,6 +2,8 @@ site :opscode
 
 cookbook 'apt',        '~> 2.3.4'
 cookbook 'ark',        '~> 0.4.2'
+cookbook 'dev_env-bootstrap',
+  path: 'cookbooks/dev_env-bootstrap'
 cookbook 'git',        '~> 2.9.0'
 cookbook 'packer',     '~> 0.2.4'
 cookbook 'rbenv',

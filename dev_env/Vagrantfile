@@ -65,6 +65,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision :chef_solo do |chef|
       chef.add_recipe "apt"
       chef.add_recipe "ark"
+      chef.add_recipe "dev_env-bootstrap"
       chef.add_recipe "virtualbox"
       chef.add_recipe "packer"
       chef.add_recipe "vagrant"
