@@ -69,9 +69,22 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       chef.add_recipe "packer"
       chef.add_recipe "vagrant"
       chef.add_recipe "git"
+      chef.add_recipe "ruby_build"
+      chef.add_recipe "rbenv::vagrant"
+      chef.add_recipe "rbenv::user"
   
       # You may also specify custom JSON attributes:
       chef.json = { 
+        "rbenv" => {
+          "user_installs" => [{
+            "user" => "vagrant",
+            "rubies" => [ "1.9.3-p484" ],
+            "global" =>   "1.9.3-p484",
+            "gems"   => {
+              "1.9.3-p484" => [{ "name" => "bundler" }]
+            }
+          }]
+        },
         "packer" => {
           "version" => "0.5.1"
         },
