@@ -40,6 +40,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # argument is a set of non-required options.
   config.vm.synced_folder "..", "/zerg"
 
+  # Enabling vagrant-berkshelf & vagrant-omnibus plugins
+  config.berkshelf.enabled    = true
+  config.omnibus.chef_version = :latest
+
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
   # Example for VirtualBox:
@@ -61,13 +65,27 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision :chef_solo do |chef|
       chef.add_recipe "apt"
       chef.add_recipe "ark"
+      chef.add_recipe "dev_env-bootstrap"
       chef.add_recipe "virtualbox"
       chef.add_recipe "packer"
       chef.add_recipe "vagrant"
       chef.add_recipe "git"
+      chef.add_recipe "ruby_build"
+      chef.add_recipe "rbenv::vagrant"
+      chef.add_recipe "rbenv::user"
   
       # You may also specify custom JSON attributes:
       chef.json = { 
+        "rbenv" => {
+          "user_installs" => [{
+            "user" => "vagrant",
+            "rubies" => [ "1.9.3-p484" ],
+            "global" =>   "1.9.3-p484",
+            "gems"   => {
+              "1.9.3-p484" => [{ "name" => "bundler" }]
+            }
+          }]
+        },
         "packer" => {
           "version" => "0.5.1"
         },
