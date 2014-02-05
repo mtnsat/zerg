@@ -1,0 +1,8 @@
+site :opscode
+
+cookbook 'apt',        '~> 2.3.4'
+cookbook 'ark',        '~> 0.4.2'
+cookbook 'git',        '~> 2.9.0'
+cookbook 'packer',     '~> 0.2.4'
+cookbook 'vagrant',    '~> 0.2.0'
+cookbook 'virtualbox', '~> 1.0.2'
