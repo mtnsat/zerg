@@ -69,7 +69,7 @@ Note that prior to trying the helloaws task you will need to set some environmen
 
 - AWS_ACCESS_KEY_ID - AWS key id
 - AWS_SECRET_ACCESS_KEY - AWS secret key
-- AWS_PRIVATE_KEY_PATH - AWS key pair name
+- AWS_KEY_PAIR - AWS key pair name
 - AWS_PRIVATE_KEY_PATH - path to the private key .pem
 
 You will then be bale to run the task with:

@@ -17,6 +17,5 @@ Setup environment variables:
 - ZERG_TEST_CHEF_CLIENTNAME - validator name (i.e. 'chef-validator')
 - AWS_ACCESS_KEY_ID - AWS key id
 - AWS_SECRET_ACCESS_KEY - AWS secret key
+- AWS_KEY_PAIR - AWS key pair name
 - AWS_PRIVATE_KEY_PATH - AWS key pair name
-- AWS_PRIVATE_KEY_PATH - path to the private key .pem
-=
