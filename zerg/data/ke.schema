@@ -118,6 +118,26 @@
                 "type": "string"
               }
             ]
+          },
+          "recipes": {
+            "type": "array",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.recipes",
+            "minItems": 1,
+            "items": [
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "roles": {
+            "type": "array",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.roles",
+            "minItems": 1,
+            "items": [
+              {
+                "type": "string"
+              }
+            ]
           }
         },
         "required": [

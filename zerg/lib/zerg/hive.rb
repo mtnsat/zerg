@@ -3,6 +3,7 @@ require 'awesome_print'
 require 'json-schema'
 require 'fileutils'
 require 'singleton'
+require 'highline/import'
 
 module Zerg
     class Hive
@@ -78,7 +79,7 @@ module Zerg
             puts "SUCCESS!"
         end
 
-        def self.get(file, force)
+        def self.import(file, force)
             load_path = (ENV['HIVE_CWD'] == nil) ? File.join("#{Dir.pwd}", ".hive") : File.join("#{ENV['HIVE_CWD']}", ".hive")
             abort("ERROR: '.hive' not found at #{load_path}. Run 'zerg init', change HIVE_CWD or run zerg from a different path.") unless File.directory?(load_path) 
             abort("ERROR: '#{file}' not found!") unless File.exist?(file) 
@@ -94,6 +95,27 @@ module Zerg
             rescue JSON::ParserError => err
                 abort("ERROR: Could not parse #{file}. Likely invalid JSON.")
             end
+            puts "SUCCESS!"
+        end
+
+        def self.remove(taskname, force)
+            load_path = (ENV['HIVE_CWD'] == nil) ? File.join("#{Dir.pwd}", ".hive") : File.join("#{ENV['HIVE_CWD']}", ".hive")
+            abort("ERROR: '.hive' not found at #{load_path}. Run 'zerg init', change HIVE_CWD or run zerg from a different path.") unless File.directory?(load_path) 
+            abort("ERROR: '#{taskname}' not found!") unless File.exist?(File.join(load_path, "#{taskname}.ke")) 
+
+            # check the file against schema.
+            taskfile = File.join(load_path, "#{taskname}.ke")
+
+            agreed = true
+            if force != true
+                agreed = agree("Remove task #{taskname}?")
+            end
+
+            abort("Cancelled!") unless agreed == true
+
+            FileUtils.rm_rf(File.join(load_path, "driver", taskname))
+            FileUtils.rm(File.join(load_path, "#{taskname}.ke"))
+
             puts "SUCCESS!"
         end
     end

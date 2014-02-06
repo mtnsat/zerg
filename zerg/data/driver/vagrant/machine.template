@@ -4,7 +4,7 @@
         <%= bridge_specifics %>
         <%= hostonly_specifics %>
         # provisioning
-        tasks = <%= tasks_array %>
+        tasks = JSON.parse(<%= tasks_array %>)
         tasks.each { |task| 
             if task["type"] == "inline"
                 <%= machine_name %>.vm.provision :shell, inline: "#{task['payload']}"
@@ -15,6 +15,7 @@
                     provisioner.args = "#{task['parameters']}" unless !task.has_key?('parameters') 
                 end
             elsif task["type"] == "chef_client"
+                <%= machine_name %>.omnibus.chef_version = :latest
                 <%= machine_name %>.vm.provision :chef_client do |provisioner| 
 
                     provisioner.environment = "#{task['environment']}" unless !task.has_key?('environment')
@@ -28,7 +29,7 @@
 
                     # process recipes
                     if task["recipes"] != nil
-                        task["recipies"].each { |recipe|
+                        task["recipes"].each { |recipe|
                             provisioner.add_recipe(recipe)
                         }
                     end
@@ -41,6 +42,7 @@
                     end
                 end
             elsif task["type"] == "chef_solo"
+                <%= machine_name %>.omnibus.chef_version = :latest
                 <%= machine_name %>.vm.provision :chef_solo do |provisioner| 
                     provisioner.cookbooks_path = task['cookbooks_path'] unless !task.has_key?('cookbooks_path')
                     provisioner.roles_path = task['roles_path'] unless !task.has_key?('roles_path')
@@ -55,7 +57,7 @@
                     
                     # process recipes
                     if task["recipes"] != nil
-                        task["recipies"].each { |recipe|
+                        task["recipes"].each { |recipe|
                             provisioner.add_recipe(recipe)
                         }
                     end
