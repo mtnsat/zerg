@@ -76,8 +76,8 @@ module Zerg
                 # last ip octet offset for host only networking
                 ip_octet_offset = index
 
-                # tasks array rendered to ruby string
-                tasks_array = @tasks.to_s
+                # tasks array rendered to ruby string. double encoding to escape quotes and allow for variable expansion
+                tasks_array = @tasks.to_json.to_json
 
                 # do we need the bridging template as well?
                 bridge_section = nil

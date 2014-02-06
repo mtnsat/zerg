@@ -20,7 +20,7 @@ module Zerg
                     :instances => 3,
                     :drivertype => "vagrant",
                     :providertype => "virtualbox",
-                    :baseboxpath => "http://files.vagrantup.com/precise64.box",
+                    :baseboxpath => "http://files.vagrantup.com/precise32.box",
                     :privatenetwork => true
                 }
                 template("template.ke", "#{File.join(load_path, "helloworld.ke")}", opts)

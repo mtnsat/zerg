@@ -22,10 +22,16 @@ module Zerg
             puts Zerg::Hive.list
         end
 
-        desc "get [FILE] [--force]", "import a .ke file into the hive folder"
+        desc "import [FILE] [--force]", "import a .ke file into the hive folder"
         option :force, :type => :boolean
-        def get(file)
-            puts Zerg::Hive.get(file, options[:force])
+        def import(file)
+            puts Zerg::Hive.import(file, options[:force])
+        end
+
+        desc "remove [TASK] [--force]", "remove a task from hive"
+        option :force, :type => :boolean
+        def remove(file)
+            puts Zerg::Hive.remove(file, options[:force])
         end
     end
 
@@ -39,14 +45,16 @@ module Zerg
             puts Zerg::Generators::HiveGen.start
         end
 
-        desc "rush [TASK]", "runs a task from hive"
+        desc "rush [TASK] [--debug]", "runs a task from hive"
+        option :debug, :type => :boolean
         def rush(task)
-            puts Zerg::Runner.rush(task)
+            puts Zerg::Runner.rush(task, options[:debug])
         end
 
-        desc "clean [TASK]", "cleans a task"
+        desc "clean [TASK] [--debug]", "cleans a task"
+        option :debug, :type => :boolean
         def clean(task)
-            puts Zerg::Runner.clean(task)
+            puts Zerg::Runner.clean(task, options[:debug])
         end
           
         register(HiveCLI, 'hive', 'hive [COMMAND]', 'Manage hive - a collection of task descriptions.')

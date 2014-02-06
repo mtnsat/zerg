@@ -17,7 +17,7 @@ module Zerg
           return nil
         end
 
-        def process(taskname, task)
+        def process(taskname, task, debug)
             puts ("Will perform task #{taskname} with contents:\n #{task.ai}")
 
             # render driver template
@@ -28,10 +28,26 @@ module Zerg
                 task["tasks"])
             
             renderer.render
-            run(taskname, task["vm"]["driver"]["providertype"], task["instances"])
+
+            # do we need additional plugins?
+            task["tasks"].each { |task|
+                if task["type"] == "chef_client" || task["type"] == "chef_solo"
+                    omnibus_pid = Process.spawn("vagrant plugin list | grep vagrant-omnibus")
+                    Process.wait(omnibus_pid)
+
+                    if $?.exitstatus != 0
+                        omnibus_pid = Process.spawn("vagrant plugin install vagrant-omnibus")
+                        Process.wait(aws_pid)
+                        abort("ERROR: vagrant-omnibus installation failed!") unless $?.exitstatus == 0
+                    end
+                    break;
+                end
+            }
+
+            run(taskname, task["vm"]["driver"]["providertype"], task["instances"], debug)
         end
 
-        def cleanup(taskname, task)
+        def cleanup(taskname, task, debug)
             abort("ERROR: Vagrant not installed!") unless which("vagrant") != nil
             puts ("Will cleanup task #{taskname}...")
 
@@ -46,21 +62,23 @@ module Zerg
 
             # run vagrant cleanup
             cleanup_pid = nil
+            debug_string = (debug == true) ? " --debug" : ""
             for index in 0..task["instances"] - 1
                 cleanup_pid = Process.spawn(
                     {
                         "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
                     },
-                    "vagrant box remove zergling_#{index} #{task["vm"]["driver"]["providertype"]}; vagrant destroy zergling_#{index} --force")
+                    "vagrant box remove zergling_#{index} #{task["vm"]["driver"]["providertype"]}#{debug_string}; vagrant destroy zergling_#{index} --force#{debug_string}")
                 Process.wait(cleanup_pid)
                 abort("ERROR: vagrant failed!") unless $?.exitstatus == 0
             end
         end
 
-        def run(taskname, provider, instances)
+        def run(taskname, provider, instances, debug)
             # TODO: generalize to multiple drivers
             abort("ERROR: Vagrant not installed!") unless which("vagrant") != nil
 
+            debug_string = (debug == true) ? " --debug" : ""
             # check plugin if correct plugin is present for aws
             if provider == "aws"
                 aws_pid = Process.spawn("vagrant plugin list | grep vagrant-aws")
@@ -80,11 +98,12 @@ module Zerg
                     {
                         "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
                     },
-                    "vagrant up zergling_#{index} --no-provision --provider=#{provider}")
+                    "vagrant up zergling_#{index} --no-provision --provider=#{provider}#{debug_string}")
                 Process.wait(create_pid)
                 
                 if $?.exitstatus != 0
-                    clean(taskname)
+                    puts "ERROR: vagrant failed while creating one of the VMs. Will clean task #{taskname}:"
+                    self.class.clean(taskname, debug)
                     abort("ERROR: vagrant failed!")
                 end
             end
@@ -98,7 +117,7 @@ module Zerg
                     {
                         "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
                     },
-                    "vagrant provision zergling_#{index}")
+                    "vagrant provision zergling_#{index}#{debug_string}")
                 provisioners.push({:name => "zergling_#{index}", :pid => provision_pid})
             end
 
@@ -122,7 +141,7 @@ module Zerg
                     {
                         "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
                     },
-                    "vagrant halt zergling_#{index}")
+                    "vagrant halt zergling_#{index}#{debug_string}")
                 Process.wait(halt_pid)
                 abort("ERROR: vagrant halt failed on machine zergling_#{index}!") unless $?.exitstatus == 0
             end
@@ -131,7 +150,7 @@ module Zerg
             puts("SUCCESS!")
         end
 
-        def self.rush(task)
+        def self.rush(task, debug)
             # load the hive first
             Zerg::Hive.instance.load
 
@@ -140,10 +159,10 @@ module Zerg
 
             # grab the current task hash and parse it out
             runner = Runner.new
-            runner.process(task, Zerg::Hive.instance.hive[task]);
+            runner.process(task, Zerg::Hive.instance.hive[task], debug);
         end
 
-        def self.clean(task)
+        def self.clean(task, debug)
             # load the hive first
             Zerg::Hive.instance.load
 
@@ -151,7 +170,7 @@ module Zerg
             abort("ERROR: Task #{task} not found in current hive!") unless Zerg::Hive.instance.hive.has_key?(task) 
 
             runner = Runner.new
-            runner.cleanup(task, Zerg::Hive.instance.hive[task]);
+            runner.cleanup(task, Zerg::Hive.instance.hive[task], debug);
             puts("SUCCESS!")
         end
     end
