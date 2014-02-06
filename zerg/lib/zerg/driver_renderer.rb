@@ -2,6 +2,7 @@ require 'awesome_print'
 require 'fileutils'
 require 'erb'
 require 'ostruct'
+require 'securerandom'
 
 module Zerg
     class DriverRenderer
@@ -75,6 +76,13 @@ module Zerg
 
                 # last ip octet offset for host only networking
                 ip_octet_offset = index
+
+                # inject randomized node_name into chef_client tasks
+                @tasks.each { |task| 
+                    if task["type"] == "chef_client"
+                        task["node_name"] = "zergling_#{index}_#{SecureRandom.hex(20)}"
+                    end
+                }
 
                 # tasks array rendered to ruby string. double encoding to escape quotes and allow for variable expansion
                 tasks_array = @tasks.to_json.to_json
