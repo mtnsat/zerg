@@ -130,13 +130,13 @@ Task [schema]:
             "type": "string",
             "id": "com.mtnsat.zerg.json.ke.tasks.item.client_key_path"
           },
-          "node_name": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.node_name"
-          },
           "validation_client_name": {
             "type": "string",
             "id": "com.mtnsat.zerg.json.ke.tasks.item.validation_client_name"
+          },
+          "arguments": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.arguments"
           },
           "chef_server_url": {
             "type": "string",
@@ -150,6 +150,66 @@ Task [schema]:
             "type": "string",
             "id": "com.mtnsat.zerg.json.ke.tasks.item.encrypted_data_bag_secret_key_path"
           },
+          "binary_path": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.binary_path"
+          },
+          "custom_config_path": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.custom_config_path"
+          },
+          "formatter": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.formatter"
+          },
+          "http_proxy": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.http_proxy"
+          },
+          "http_proxy_user": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.http_proxy_user"
+          },
+          "http_proxy_pass": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.http_proxy_pass"
+          },
+          "no_proxy": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.no_proxy"
+          },
+          "https_proxy": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.https_proxy"
+          },
+          "https_proxy_user": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.https_proxy_user"
+          },
+          "https_proxy_pass": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.https_proxy_pass"
+          },
+          "log_level": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.log_level"
+          },
+          "provisioning_path": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.provisioning_path"
+          },
+          "file_cache_path": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.file_cache_path"
+          },
+          "file_backup_path": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.file_backup_path"
+          },
+          "verbose_logging": {
+            "type": "boolean",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.verbose_logging"
+          },
           "delete_node": {
             "type": "boolean",
             "id": "com.mtnsat.zerg.json.ke.tasks.item.delete_node"
@@ -161,6 +221,10 @@ Task [schema]:
           "nfs": {
             "type": "boolean",
             "id": "com.mtnsat.zerg.json.ke.tasks.item.nfs"
+          },
+          "attempts": {
+            "type": "integer",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.attempts"
           },
           "json": {
             "type": "object",
@@ -299,9 +363,10 @@ Task [schema]:
     - inline and script task parameters: 
         - payload - Payload value. Either a line of bash, or path to a file
         - parameters - Paremeters to a script file. Not applicable to 'inline'
-    - chef_client and chef_solo task parameters map directly to Vagrant provisioner docs:
+    - chef_client and chef_solo task parameters map directly to Vagrant provisioner docs, **EXCEPT the node_name parameter**:
         - [chef_solo provisioner]
         - [chef_client provisioner]
+        - [chef common options]
         - recipes - array of strings, each string being a name of a cookbook
         - roles - array of strings, each string being a name of a role
 - vm - description of all VM instances.
@@ -438,3 +503,4 @@ Not a problem locally, but would be **BAD** for a REST API
 [schema]:http://json-schema.org
 [chef_solo provisioner]:http://docs.vagrantup.com/v2/provisioning/chef_solo.html
 [chef_client provisioner]:https://docs.vagrantup.com/v2/provisioning/chef_client.html
+[chef common options]:http://docs.vagrantup.com/v2/provisioning/chef_common.html
