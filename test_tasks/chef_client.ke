@@ -5,6 +5,8 @@
             "type": "chef_client",
             "chef_server_url": "#{ENV['ZERG_TEST_CHEF_SERVER']}",
             "validation_key_path": "#{ENV['ZERG_TEST_CHEF_VALIDATOR']}",
+            "client_key_path": "#{ENV['ZERG_TEST_CHEF_CLIENTKEY']}",
+            "validation_client_name": "#{ENV['ZERG_TEST_CHEF_CLIENTNAME']}",
             "delete_node": true,
             "delete_client": true,
             "recipes": ["git"]
