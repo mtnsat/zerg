@@ -2,8 +2,8 @@
     "instances": <%= config[:instances] %>,
     "tasks": [
         {
-            "type": "inline",
-            "payload": "echo \"ZERG RUSH!\""
+            "type": "shell",
+            "inline": "echo \"ZERG RUSH!\""
         }        
     ],
     "vm": {

@@ -20,12 +20,16 @@
         "properties": {
           "type": {
             "type": "string",
-            "pattern": "^(shell|inline|chef_client|chef_solo)$",
+            "pattern": "^(shell|chef_client|chef_solo)$",
             "id": "com.mtnsat.zerg.json.ke.tasks.item.type"
           },
-          "payload": {
+          "inline": {
             "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.payload"
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.inline"
+          },
+          "path": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.path"
           },
           "parameters": {
             "type": "string",
@@ -34,6 +38,10 @@
           "environment": {
             "type": "string",
             "id": "com.mtnsat.zerg.json.ke.tasks.item.environment"
+          },
+          "upload_path": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.upload_path"
           },
           "recipe_url": {
             "type": "string",
@@ -135,6 +143,18 @@
             "type": "boolean",
             "id": "com.mtnsat.zerg.json.ke.tasks.item.nfs"
           },
+          "binary": {
+            "type": "boolean",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.binary"
+          },
+          "keep_color": {
+            "type": "boolean",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.keep_color"
+          },
+          "priveleged": {
+            "type": "boolean",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.priveleged"
+          },
           "attempts": {
             "type": "integer",
             "id": "com.mtnsat.zerg.json.ke.tasks.item.attempts"
@@ -146,6 +166,16 @@
           "cookbooks_path": {
             "type": "array",
             "id": "com.mtnsat.zerg.json.ke.tasks.item.cookbooks_path",
+            "minItems": 1,
+            "items": [
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "args": {
+            "type": "array",
+            "id": "com.mtnsat.zerg.json.ke.tasks.item.args",
             "minItems": 1,
             "items": [
               {
@@ -183,7 +213,7 @@
               }
             ]
           },
-          "recipes": {
+          "run_list": {
             "type": "array",
             "id": "com.mtnsat.zerg.json.ke.tasks.item.recipes",
             "minItems": 1,
@@ -226,7 +256,7 @@
             "providertype": {
               "type": "string",
               "id": "com.mtnsat.zerg.json.ke.vm.driver.providertype",
-              "pattern": "^(virtualbox|aws)$"
+              "pattern": "^(virtualbox|aws|libvirt)$"
             },
             "provider_options": {
               "type": "array",
