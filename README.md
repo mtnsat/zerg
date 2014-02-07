@@ -82,7 +82,7 @@ Tasks
 --------------
 Zerg task files are json files that are loaded by zerg, validated, and then transformed into a Vagrantfile. Vagrant is then launched against that generated vagrantfile.
 
-[Task JSON schema](ke.schema)
+[Task JSON schema](zerg/data/ke.schema)
 
 - instances - number of virtual machines that'll be started
 - tasks - array of tasks
