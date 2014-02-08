@@ -11,13 +11,13 @@
             "drivertype": "<%= config[:drivertype] %>",
             "providertype": "<%= config[:providertype] %>",
             "provider_options": [
-                "aws.instance_type = 't1.micro'",
-                "aws.access_key_id = \"#{ENV['AWS_ACCESS_KEY_ID']}\"",
-                "aws.secret_access_key = \"#{ENV['AWS_SECRET_ACCESS_KEY']}\"",
-                "aws.keypair_name = \"#{ENV['AWS_KEY_PAIR']}\"",
-                "aws.ami = 'ami-3fec7956'",
-                "aws.region = 'us-east-1'",
-                "aws.security_groups = [ 'vagrant' ]",
+                "<%= config[:providertype] %>.instance_type = 't1.micro'",
+                "<%= config[:providertype] %>.access_key_id = \"#{ENV['AWS_ACCESS_KEY_ID']}\"",
+                "<%= config[:providertype] %>.secret_access_key = \"#{ENV['AWS_SECRET_ACCESS_KEY']}\"",
+                "<%= config[:providertype] %>.keypair_name = \"#{ENV['AWS_KEY_PAIR']}\"",
+                "<%= config[:providertype] %>.ami = 'ami-3fec7956'",
+                "<%= config[:providertype] %>.region = 'us-east-1'",
+                "<%= config[:providertype] %>.security_groups = [ 'vagrant' ]",
                 "override.ssh.username = 'ubuntu'",
                 "override.ssh.private_key_path = \"#{ENV['AWS_PRIVATE_KEY_PATH']}\""
             ]

@@ -91,14 +91,14 @@ module Zerg
                     abort("ERROR: vagrant-aws installation failed!") unless $?.exitstatus == 0
                 end
             elsif provider == "libvirt"
-                abort("ERROR: libvirt is only supported on a linux host!") unless /linux|arch/i === 0
+                abort("ERROR: libvirt is only supported on a linux host!") unless /linux|arch/i === RbConfig::CONFIG['host_os']
                 
                 libvirt_pid = Process.spawn("vagrant plugin list | grep vagrant-libvirt")
-                Process.wait(aws_pid)
+                Process.wait(libvirt_pid)
 
                 if $?.exitstatus != 0
                     libvirt_pid = Process.spawn("vagrant plugin install vagrant-libvirt")
-                    Process.wait(aws_pid)
+                    Process.wait(libvirt_pid)
                     abort("ERROR: vagrant-libvirt installation failed! Refer to https://github.com/pradels/vagrant-libvirt to install missing dependencies, if any.") unless $?.exitstatus == 0
                 end
             end
