@@ -1,5 +1,25 @@
 {
     "instances": <%= config[:instances] %>,
+    "synced_folders" : [
+        {
+            "host_path": ".",
+            "guest_path": "/vagrant",
+            "options": [
+                { 
+                    "type": "rsync"
+                }
+            ]
+        },
+        {
+            "host_path": "~",
+            "guest_path": "/helloworld",
+            "options": [
+                { 
+                    "type": "nfs"
+                }
+            ]
+        }
+    ],
     "tasks": [
         {
             "type": "shell",

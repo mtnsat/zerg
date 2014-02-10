@@ -1,9 +1,13 @@
     # define the machine name
     config.vm.define "<%= machine_name %>" do |<%= machine_name %>|
-        <%= machine_name %>.vm.box = "<%= machine_name %>"
         <%= bridge_specifics %>
         <%= hostonly_specifics %>
         
+        folders = JSON.parse(<%= sync_folders_array %>)
+        folders.each { |folder| 
+            <%= machine_name %>.vm.synced_folder folder["host_path"], folder["guest_path"], *folder["options"]
+        }
+    
         # provisioning
         tasks = JSON.parse(<%= tasks_array %>)
         tasks.each { |task| 

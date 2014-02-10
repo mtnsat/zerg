@@ -12,6 +12,26 @@
       "id": "com.mtnsat.zerg.json.ke.ram_per_vm",
       "minimum": 256
     },
+    "synced_folders": {
+      "type": "array",
+      "id": "com.mtnsat.zerg.json.ke.tasks",
+      "items": {
+        "properties": {
+          "host_path": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.synced_folder.item.host_path"
+          },
+          "guest_path": {
+            "type": "string",
+            "id": "com.mtnsat.zerg.json.ke.synced_folder.item.guest_path"
+          },
+          "options": {
+            "type": "array",
+            "id": "com.mtnsat.zerg.json.ke.synced_folder.item.options"
+          }
+        }
+      }
+    },
     "tasks": {
       "type": "array",
       "id": "com.mtnsat.zerg.json.ke.tasks",

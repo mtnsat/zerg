@@ -6,6 +6,20 @@
             "inline": "echo \"ZERG RUSH!\""
         }        
     ],
+    "synced_folders" : [
+        {
+            "host_path": ".",
+            "guest_path": "/vagrant",
+            "options": [
+                { 
+                    "type": "rsync"
+                },
+                {
+                    "mount_options" : ["rw", "vers=3", "tcp"]
+                }
+            ]
+        }
+    ],
     "vm": {
         "driver": {
             "drivertype": "vagrant",
@@ -18,6 +32,6 @@
             ]
         },
         "basebox": "http://kwok.cz/centos64.box",
-        "private_network": true
+        "private_network": false
     }
 }

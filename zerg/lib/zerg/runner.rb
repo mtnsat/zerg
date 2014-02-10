@@ -26,6 +26,7 @@ module Zerg
                 task["vm"], 
                 taskname, 
                 task["instances"], 
+                task["synced_folders"], 
                 task["tasks"])
             
             renderer.render
@@ -57,7 +58,8 @@ module Zerg
             renderer = DriverRenderer.new(
                 task["vm"], 
                 taskname, 
-                task["instances"], 
+                task["instances"],
+                task["synced_folders"],  
                 task["tasks"])        
             renderer.render
 

@@ -85,6 +85,10 @@ Zerg task files are json files that are loaded by zerg, validated, and then tran
 [Task JSON schema](zerg/data/ke.schema)
 
 - instances - number of virtual machines that'll be started
+- synced_folders - array of folders to sync 
+    - host_path - path to folder on the host
+    - guest_path - path to folder on the guest that host_path will map to
+    - options - array of options corresponding to [Vagrant sync folder options]
 - tasks - array of tasks
     - type - Type of task payload. 'shell', 'chef_client' or 'chef_solo'
     - inline and script task parameters: 
@@ -220,6 +224,7 @@ Not a problem locally, but would be **BAD** for a REST API
 
 [Vagrant]:http://wwww.vagrantup.com
 [Vagrant docs]:http://docs.vagrantup.com/v2/virtualbox/configuration.html
+[Vagrant sync folder options]:http://docs.vagrantup.com/v2/synced-folders/basic_usage.html
 [vagrant-aws docs]:https://github.com/mitchellh/vagrant-aws
 [Packer]:http://www.packer.io
 [Chef Solo]:http://docs.opscode.com/chef_solo.html

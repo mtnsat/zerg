@@ -24,11 +24,12 @@ module Zerg
             return "#{firstChar}#{secondChar}#{restOfChars}"
         end
 
-        def initialize(vm, name, instances, tasks )
+        def initialize(vm, name, instances, synced_folders, tasks )
             @vm = vm
             @name = name
             @instances = instances
             @tasks = tasks
+            @synced_folders = synced_folders
         end
 
         def render
@@ -107,16 +108,21 @@ module Zerg
                 hostonly_section = nil
                 if @vm["private_network"] == true
                     sources = {
+                        :machine_name => "zergling_#{index}",
                         :last_octet => ip_octet_offset + 4, # TODO: this is probably specific to virtualbox networking
                     }
                     hostonly_section = Erbalize.erbalize_hash(hostonly_template, sources)
                 end
 
+                # sync folder array rendered to ruby string. double encoding to escape quotes and allow for variable expansion
+                folder_array = @synced_folders.to_json.to_json
+
                 sources = {
                     :machine_name => "zergling_#{index}",
                     :bridge_specifics => bridge_section,
                     :hostonly_specifics => hostonly_section,
-                    :tasks_array => tasks_array
+                    :tasks_array => tasks_array,
+                    :sync_folders_array => folder_array 
                 }.delete_if { |k, v| v.nil? }
 
                 machine_section = Erbalize.erbalize_hash(machine_template, sources)
@@ -126,7 +132,8 @@ module Zerg
             sources = {
                 :provider_section => provider_parent_string,
                 :basebox_path => @vm["basebox"],
-                :vm_defines => all_machines 
+                :box_name => "zergling_#{@name}_#{@vm["driver"]["providertype"]}",
+                :vm_defines => all_machines
             }
             full_template = Erbalize.erbalize_hash(main_template, sources)
 
