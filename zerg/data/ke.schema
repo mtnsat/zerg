@@ -29,7 +29,12 @@
             "type": "array",
             "id": "com.mtnsat.zerg.json.ke.synced_folder.item.options"
           }
-        }
+        },
+        "required": [
+            "host_path",
+            "guest_path"
+        ],
+        "additionalProperties": false
       }
     },
     "tasks": {

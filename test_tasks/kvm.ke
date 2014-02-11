@@ -12,7 +12,7 @@
             "guest_path": "/vagrant",
             "options": [
                 { 
-                    "type": "rsync"
+                    "nfs": true
                 },
                 {
                     "mount_options" : ["rw", "vers=3", "tcp"]

@@ -12,7 +12,7 @@ module Zerg
             end
 
             def render(template)
-                ERB.new(template).result(binding)
+                ERB.new(template, nil, '-').result(binding)
             end
         end
 
@@ -114,15 +114,33 @@ module Zerg
                     hostonly_section = Erbalize.erbalize_hash(hostonly_template, sources)
                 end
 
-                # sync folder array rendered to ruby string. double encoding to escape quotes and allow for variable expansion
-                folder_array = @synced_folders.to_json.to_json
+                # blah
+                folder_definitions = ""
+                @synced_folders.each { |folder| 
+                    other_options = ""
+                    if folder.has_key?("options")
+                        folder["options"].each { |option|
+                            option.each do |key, value|
+                                if value.is_a?(String)
+                                    other_options += ", :#{key} => \"#{value}\""
+                                else
+                                    other_options += ", :#{key} => #{value}" 
+                                end
+                            end
+                        } 
+                    end
+
+                    folder_definition = "zergling_#{index}.vm.synced_folder \"#{folder['host_path']}\", \"#{folder['guest_path']}\""
+                    folder_definition = "#{folder_definition}#{other_options}" unless other_options.empty?()
+                    folder_definitions += "\t\t#{folder_definition}\n"
+                }
 
                 sources = {
                     :machine_name => "zergling_#{index}",
                     :bridge_specifics => bridge_section,
                     :hostonly_specifics => hostonly_section,
                     :tasks_array => tasks_array,
-                    :sync_folders_array => folder_array 
+                    :sync_folders_array => folder_definitions 
                 }.delete_if { |k, v| v.nil? }
 
                 machine_section = Erbalize.erbalize_hash(machine_template, sources)

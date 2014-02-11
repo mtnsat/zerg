@@ -6,7 +6,7 @@
             "guest_path": "/vagrant",
             "options": [
                 { 
-                    "type": "rsync"
+                    "disabled": true
                 }
             ]
         },

@@ -64,6 +64,11 @@ virsh pool-start default
 
 ```
 
+Make sure NFS is installed ...
+
+```
+sudo apt-get install nfs-kernel-server nfs-common portmap
+```
 [preliminary setup you'll likely have to do]:http://marenkay.com/linux/ubuntu-lts-1204-qemu-vagrant.rem
 
 

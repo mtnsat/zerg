@@ -1,3 +1,3 @@
     config.vm.provider :<%= provider %> do |<%= provider %>, override|
-<%= provider_specifics %>
+<%= provider_specifics -%>
     end
