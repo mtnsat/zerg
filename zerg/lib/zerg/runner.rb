@@ -65,12 +65,6 @@ module Zerg
 
             # run vagrant cleanup
             debug_string = (debug == true) ? " --debug" : ""
-            cleanup_pid = Process.spawn(
-                {
-                    "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
-                },
-                "vagrant box remove zergling_#{taskname}_#{task["vm"]["driver"]["providertype"]}#{debug_string} #{task["vm"]["driver"]["providertype"]}")
-            Process.wait(cleanup_pid)
             
             for index in 0..task["instances"] - 1
                 cleanup_pid = Process.spawn(
@@ -81,6 +75,13 @@ module Zerg
                 Process.wait(cleanup_pid)
                 abort("ERROR: vagrant failed!") unless $?.exitstatus == 0
             end
+
+            cleanup_pid = Process.spawn(
+                {
+                    "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
+                },
+                "vagrant box remove zergling_#{taskname}_#{task["vm"]["driver"]["providertype"]}#{debug_string} #{task["vm"]["driver"]["providertype"]}")
+            Process.wait(cleanup_pid)
         end
 
         def run(taskname, provider, instances, debug)
