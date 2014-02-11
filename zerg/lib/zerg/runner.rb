@@ -69,7 +69,8 @@ module Zerg
             for index in 0..task["instances"] - 1
                 cleanup_pid = Process.spawn(
                     {
-                        "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
+                        "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname),
+                        "VAGRANT_DEFAULT_PROVIDER" => "#{task["vm"]["driver"]["providertype"]}"
                     },
                     "vagrant destroy zergling_#{index} --force#{debug_string}")
                 Process.wait(cleanup_pid)
@@ -137,7 +138,8 @@ module Zerg
             for index in 0..instances - 1
                 provision_pid = Process.spawn(
                     {
-                        "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
+                        "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname),
+                        "VAGRANT_DEFAULT_PROVIDER" => "#{provider}"
                     },
                     "vagrant provision zergling_#{index}#{debug_string}")
                 provisioners.push({:name => "zergling_#{index}", :pid => provision_pid})
