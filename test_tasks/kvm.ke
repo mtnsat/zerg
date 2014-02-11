@@ -31,7 +31,7 @@
                 "libvirt.storage_pool_name = 'default'"
             ]
         },
-        "basebox": "http://kwok.cz/centos64.box",
-        "private_network": false
+        "basebox": "https://download.gluster.org/pub/gluster/purpleidea/vagrant/centos-6.box",
+        "private_network": true
     }
 }

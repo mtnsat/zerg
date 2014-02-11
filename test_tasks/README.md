@@ -46,18 +46,11 @@ Install pre-requisites for vagrant-libvirt
 sudo apt-get install libxslt-dev libxml2-dev libvirt-dev
 ```
 
-Setup a KVM-compatible box:
+
+Ubuntu 12.04 won't have a default storage pool defined (sigh):
 
 ```
-vagrant plugin install vagrant-mutate
-vagrant mutate http://files.vagrantup.com/precise64.box libvirt
-```
-
-Ubuntu 12.04 won't have a defualt storage pool defined (sigh):
-
-```
-mkdir ~/kvm_images
-virsh pool-define-as --name default --type dir --target /home/ubuntu/
+virsh pool-define-as --name default --type dir --target /var/lib/libvirt/images
 virsh pool-autostart default
 virsh pool-build default
 virsh pool-start default
@@ -69,6 +62,13 @@ Make sure NFS is installed ...
 ```
 sudo apt-get install nfs-kernel-server nfs-common portmap
 ```
+
+Now kick off the task:
+
+```
+zerg rush kvm
+```
+
 [preliminary setup you'll likely have to do]:http://marenkay.com/linux/ubuntu-lts-1204-qemu-vagrant.rem
 
 
