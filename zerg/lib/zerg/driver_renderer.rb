@@ -115,25 +115,27 @@ module Zerg
                 end
 
                 # blah
-                folder_definitions = ""
-                @synced_folders.each { |folder| 
-                    other_options = ""
-                    if folder.has_key?("options")
-                        folder["options"].each { |option|
-                            option.each do |key, value|
-                                if value.is_a?(String)
-                                    other_options += ", :#{key} => \"#{value}\""
-                                else
-                                    other_options += ", :#{key} => #{value}" 
+                folder_definitions = nil
+                if @synced_folders != nil
+                    @synced_folders.each { |folder| 
+                        other_options = ""
+                        if folder.has_key?("options")
+                            folder["options"].each { |option|
+                                option.each do |key, value|
+                                    if value.is_a?(String)
+                                        other_options += ", :#{key} => \"#{value}\""
+                                    else
+                                        other_options += ", :#{key} => #{value}" 
+                                    end
                                 end
-                            end
-                        } 
-                    end
+                            } 
+                        end
 
-                    folder_definition = "zergling_#{index}.vm.synced_folder \"#{folder['host_path']}\", \"#{folder['guest_path']}\""
-                    folder_definition = "#{folder_definition}#{other_options}" unless other_options.empty?()
-                    folder_definitions += "\t\t#{folder_definition}\n"
-                }
+                        folder_definition = "zergling_#{index}.vm.synced_folder \"#{folder['host_path']}\", \"#{folder['guest_path']}\""
+                        folder_definition = "#{folder_definition}#{other_options}" unless other_options.empty?()
+                        folder_definitions += "\t\t#{folder_definition}\n"
+                    }
+                end
 
                 sources = {
                     :machine_name => "zergling_#{index}",
