@@ -13,7 +13,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # please see the online documentation at vagrantup.com.
 
   # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = "precise64"
+  config.vm.box = "zerg_dev"
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
@@ -54,7 +54,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provider :virtualbox do |vb|
     # boot with headless mode
     vb.gui = false
-    vb.name = "virtdev"
+    vb.name = "zerg_dev"
   
     # Use VBoxManage to customize the VM. For example to change memory:
     vb.customize ["modifyvm", :id, "--memory", "1024"]
@@ -70,8 +70,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       chef.add_recipe "ark"
       chef.add_recipe "dev_env-bootstrap"
       chef.add_recipe "virtualbox"
-      chef.add_recipe "packer"
       chef.add_recipe "vagrant"
+      chef.add_recipe "packer"
       chef.add_recipe "git"
       chef.add_recipe "ruby_build"
       chef.add_recipe "rbenv::vagrant"
@@ -94,7 +94,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         },
         "vagrant" => {
           "url" => "https://dl.bintray.com/mitchellh/vagrant/vagrant_1.4.3_x86_64.deb",
-          "checksum" => "dbd06de0f3560e2d046448d627bca0cbb0ee34b036ef605aa87ed20e6ad2684b"
+          "checksum" => "dbd06de0f3560e2d046448d627bca0cbb0ee34b036ef605aa87ed20e6ad2684b",
+          "plugins" => ["vagrant-aws", "vagrant-libvirt", "vagrant-mutate"]
         },
         "virtualbox" => {
           "version" => "4.3"

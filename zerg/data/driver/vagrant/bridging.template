@@ -1,2 +1,1 @@
-        # set up bridging.
-        config.vm.network :public_network, :bridge => "<%= bridged_eth_description %>", :mac => <%= machine_mac %>, :use_dhcp_assigned_default_route => true
+<%= machine_name %>.vm.network :public_network, :bridge => "<%= bridged_eth_description %>", :mac => <%= machine_mac %>, :use_dhcp_assigned_default_route => true

@@ -9,7 +9,7 @@
             "validation_client_name": "#{ENV['ZERG_TEST_CHEF_CLIENTNAME']}",
             "delete_node": true,
             "delete_client": true,
-            "recipes": ["git"]
+            "run_list": ["recipe[git]"]
         }                  
     ],
     "vm": {

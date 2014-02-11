@@ -12,7 +12,7 @@ module Zerg
             end
 
             def render(template)
-                ERB.new(template).result(binding)
+                ERB.new(template, nil, '-').result(binding)
             end
         end
 
@@ -24,11 +24,12 @@ module Zerg
             return "#{firstChar}#{secondChar}#{restOfChars}"
         end
 
-        def initialize(vm, name, instances, tasks )
+        def initialize(vm, name, instances, synced_folders, tasks )
             @vm = vm
             @name = name
             @instances = instances
             @tasks = tasks
+            @synced_folders = synced_folders
         end
 
         def render
@@ -107,16 +108,42 @@ module Zerg
                 hostonly_section = nil
                 if @vm["private_network"] == true
                     sources = {
+                        :machine_name => "zergling_#{index}",
                         :last_octet => ip_octet_offset + 4, # TODO: this is probably specific to virtualbox networking
                     }
                     hostonly_section = Erbalize.erbalize_hash(hostonly_template, sources)
+                end
+
+                # blah
+                folder_definitions = nil
+                if @synced_folders != nil
+                    folder_definitions = ""
+                    @synced_folders.each { |folder| 
+                        other_options = ""
+                        if folder.has_key?("options")
+                            folder["options"].each { |option|
+                                option.each do |key, value|
+                                    if value.is_a?(String)
+                                        other_options += ", :#{key} => \"#{value}\""
+                                    else
+                                        other_options += ", :#{key} => #{value}" 
+                                    end
+                                end
+                            } 
+                        end
+
+                        folder_definition = "zergling_#{index}.vm.synced_folder \"#{folder['host_path']}\", \"#{folder['guest_path']}\""
+                        folder_definition = "#{folder_definition}#{other_options}" unless other_options.empty?()
+                        folder_definitions += "\t\t#{folder_definition}\n"
+                    }
                 end
 
                 sources = {
                     :machine_name => "zergling_#{index}",
                     :bridge_specifics => bridge_section,
                     :hostonly_specifics => hostonly_section,
-                    :tasks_array => tasks_array
+                    :tasks_array => tasks_array,
+                    :sync_folders_array => folder_definitions 
                 }.delete_if { |k, v| v.nil? }
 
                 machine_section = Erbalize.erbalize_hash(machine_template, sources)
@@ -126,7 +153,8 @@ module Zerg
             sources = {
                 :provider_section => provider_parent_string,
                 :basebox_path => @vm["basebox"],
-                :vm_defines => all_machines 
+                :box_name => "zergling_#{@name}_#{@vm["driver"]["providertype"]}",
+                :vm_defines => all_machines
             }
             full_template = Erbalize.erbalize_hash(main_template, sources)
 

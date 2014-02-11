@@ -4,7 +4,7 @@
         {
             "type": "chef_solo",
             "cookbooks_path": ["#{ENV['ZERG_TEST_COOKBOOKS_PATH']}"],
-            "recipes": ["starter"]
+            "run_list": ["recipe[starter]"]
         }                    
     ],
     "vm": {

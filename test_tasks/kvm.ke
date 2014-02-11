@@ -1,0 +1,37 @@
+{
+    "instances": 3,
+    "tasks": [
+        {
+            "type": "shell",
+            "inline": "echo \"ZERG RUSH!\""
+        }        
+    ],
+    "synced_folders" : [
+        {
+            "host_path": ".",
+            "guest_path": "/vagrant",
+            "options": [
+                { 
+                    "nfs": true
+                },
+                {
+                    "mount_options" : ["rw", "vers=3", "tcp"]
+                }
+            ]
+        }
+    ],
+    "vm": {
+        "driver": {
+            "drivertype": "vagrant",
+            "providertype": "libvirt",
+            "provider_options": [
+                "libvirt.driver = 'qemu'",
+                "libvirt.connect_via_ssh = false",
+                "libvirt.username = 'root'",
+                "libvirt.storage_pool_name = 'default'"
+            ]
+        },
+        "basebox": "https://download.gluster.org/pub/gluster/purpleidea/vagrant/centos-6.box",
+        "private_network": true
+    }
+}

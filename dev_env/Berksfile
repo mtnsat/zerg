@@ -1,5 +1,8 @@
 site :opscode
 
+cookbook 'build-essential'
+cookbook 'kvm', github: 'Youscribe/kvm-cookbook'
+cookbook 'libvirt', github: 'jdorothy/libvirt-cookbook', branch: 'master'
 cookbook 'apt',        '~> 2.3.4'
 cookbook 'ark',        '~> 0.4.2'
 cookbook 'dev_env-bootstrap',

@@ -1,74 +1,22 @@
     # define the machine name
     config.vm.define "<%= machine_name %>" do |<%= machine_name %>|
-        <%= machine_name %>.vm.box = "<%= machine_name %>"
-        <%= bridge_specifics %>
-        <%= hostonly_specifics %>
+    <%= bridge_specifics -%>
+    <%= hostonly_specifics %>
+<%= sync_folders_array -%>
+
         # provisioning
         tasks = JSON.parse(<%= tasks_array %>)
         tasks.each { |task| 
-            if task["type"] == "inline"
-                <%= machine_name %>.vm.provision :shell, inline: "#{task['payload']}"
-            elsif task["type"] == "shell"
-                <%= machine_name %>.vm.provision :shell do |provisioner|   
-                    provisioner.path = "#{task['payload']}"
-                    provisioner.privileged = false
-                    provisioner.args = "#{task['parameters']}" unless !task.has_key?('parameters') 
+            if task["type"] == "chef_client" || task["type"] == "chef_solo"
+                <%= machine_name %>.omnibus.chef_version = :latest   
+            end
+
+            <%= machine_name %>.vm.provision "#{task["type"]}" do |provisioner| 
+                task.each do |key, value|
+                    next if key == "type"
+                    provisioner.send("#{key}=", value)                  
                 end
-            elsif task["type"] == "chef_client"
-                <%= machine_name %>.omnibus.chef_version = :latest
-                <%= machine_name %>.vm.provision :chef_client do |provisioner| 
-
-                    provisioner.environment = "#{task['environment']}" unless !task.has_key?('environment')
-                    provisioner.client_key_path = "#{task['client_key_path']}" unless !task.has_key?('client_key_path')
-                    provisioner.node_name = "#{task['node_name']}" unless !task.has_key?('node_name')
-                    provisioner.validation_client_name = "#{task['validation_client_name']}" unless !task.has_key?('validation_client_name')
-                    provisioner.chef_server_url = "#{task['chef_server_url']}" unless !task.has_key?('chef_server_url')
-                    provisioner.validation_key_path = "#{task['validation_key_path']}" unless !task.has_key?('validation_key_path')
-                    provisioner.delete_node = task['delete_node'] unless !task.has_key?('delete_node')
-                    provisioner.delete_client = task['delete_client'] unless !task.has_key?('delete_client')
-
-                    # process recipes
-                    if task["recipes"] != nil
-                        task["recipes"].each { |recipe|
-                            provisioner.add_recipe(recipe)
-                        }
-                    end
-
-                    # process roles
-                    if task["roles"] != nil
-                        task["roles"].each { |role|
-                            provisioner.add_role(role)
-                        }
-                    end
-                end
-            elsif task["type"] == "chef_solo"
-                <%= machine_name %>.omnibus.chef_version = :latest
-                <%= machine_name %>.vm.provision :chef_solo do |provisioner| 
-                    provisioner.cookbooks_path = task['cookbooks_path'] unless !task.has_key?('cookbooks_path')
-                    provisioner.roles_path = task['roles_path'] unless !task.has_key?('roles_path')
-                    provisioner.data_bags_path = "#{task['data_bags_path']}" unless !task.has_key?('data_bags_path')
-                    provisioner.environments_path = "#{task['environments_path']}" unless !task.has_key?('environments_path')
-                    provisioner.node_name = "#{task['node_name']}" unless !task.has_key?('node_name')
-                    provisioner.environment = "#{task['environment']}" unless !task.has_key?('environment')
-                    provisioner.recipe_url = "#{task['recipe_url']}" unless !task.has_key?('recipe_url')
-                    provisioner.json = task['json'] unless !task.has_key?('json')
-                    provisioner.nfs = task['nfs'] unless !task.has_key?('nfs')
-                    provisioner.encrypted_data_bag_secret_key_path = task['encrypted_data_bag_secret_key_path'] unless !task.has_key?('encrypted_data_bag_secret_key_path')
-                    
-                    # process recipes
-                    if task["recipes"] != nil
-                        task["recipes"].each { |recipe|
-                            provisioner.add_recipe(recipe)
-                        }
-                    end
-
-                    # process roles
-                    if task["roles"] != nil
-                        task["roles"].each { |role|
-                            provisioner.add_role(role)
-                        }
-                    end
-                end
-            end 
+            end
         }
     end
+    
