@@ -49,6 +49,30 @@ module Zerg
             run(taskname, task["vm"]["driver"]["providertype"], task["instances"], debug)
         end
 
+        def check_provider(provider)
+            if provider == "aws"
+                aws_pid = Process.spawn("vagrant plugin list | grep vagrant-aws")
+                Process.wait(aws_pid)
+
+                if $?.exitstatus != 0
+                    aws_pid = Process.spawn("vagrant plugin install vagrant-aws")
+                    Process.wait(aws_pid)
+                    abort("ERROR: vagrant-aws installation failed!") unless $?.exitstatus == 0
+                end
+            elsif provider == "libvirt"
+                abort("ERROR: libvirt is only supported on a linux host!") unless /linux|arch/i === RbConfig::CONFIG['host_os']
+                
+                libvirt_pid = Process.spawn("vagrant plugin list | grep vagrant-libvirt")
+                Process.wait(libvirt_pid)
+
+                if $?.exitstatus != 0
+                    libvirt_pid = Process.spawn("vagrant plugin install vagrant-libvirt")
+                    Process.wait(libvirt_pid)
+                    abort("ERROR: vagrant-libvirt installation failed! Refer to https://github.com/pradels/vagrant-libvirt to install missing dependencies, if any.") unless $?.exitstatus == 0
+                end
+            end
+        end
+
         def cleanup(taskname, task, debug)
             abort("ERROR: Vagrant not installed!") unless which("vagrant") != nil
             puts ("Will cleanup task #{taskname}...")
@@ -62,6 +86,8 @@ module Zerg
                 task["synced_folders"],  
                 task["tasks"])        
             renderer.render
+
+            check_provider(task["vm"]["driver"]["providertype"])
 
             # run vagrant cleanup
             debug_string = (debug == true) ? " --debug" : ""
@@ -89,30 +115,9 @@ module Zerg
             # TODO: generalize to multiple drivers
             abort("ERROR: Vagrant not installed!") unless which("vagrant") != nil
 
-            debug_string = (debug == true) ? " --debug" : ""
-            # check plugin if correct plugin is present for aws
-            if provider == "aws"
-                aws_pid = Process.spawn("vagrant plugin list | grep vagrant-aws")
-                Process.wait(aws_pid)
+            check_provider(provider)
 
-                if $?.exitstatus != 0
-                    aws_pid = Process.spawn("vagrant plugin install vagrant-aws")
-                    Process.wait(aws_pid)
-                    abort("ERROR: vagrant-aws installation failed!") unless $?.exitstatus == 0
-                end
-            elsif provider == "libvirt"
-                abort("ERROR: libvirt is only supported on a linux host!") unless /linux|arch/i === RbConfig::CONFIG['host_os']
-                
-                libvirt_pid = Process.spawn("vagrant plugin list | grep vagrant-libvirt")
-                Process.wait(libvirt_pid)
-
-                if $?.exitstatus != 0
-                    libvirt_pid = Process.spawn("vagrant plugin install vagrant-libvirt")
-                    Process.wait(libvirt_pid)
-                    abort("ERROR: vagrant-libvirt installation failed! Refer to https://github.com/pradels/vagrant-libvirt to install missing dependencies, if any.") unless $?.exitstatus == 0
-                end
-            end
-                
+            debug_string = (debug == true) ? " --debug" : ""                
 
             # bring up all of the VMs first.
             puts("Starting vagrant in #{File.join("#{Dir.pwd}", ".hive", "driver", taskname)}")

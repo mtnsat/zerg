@@ -117,6 +117,7 @@ module Zerg
                 # blah
                 folder_definitions = nil
                 if @synced_folders != nil
+                    folder_definitions = ""
                     @synced_folders.each { |folder| 
                         other_options = ""
                         if folder.has_key?("options")
