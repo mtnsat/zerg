@@ -14,7 +14,7 @@
     "tasks": [
         {
             "type": "shell",
-            "inline": "cd /helloworld; mkdir -p helloworld_result; touch helloworld_result\zerg_was_here.result; echo \"DONE!\""
+            "inline": "cd /helloworld; mkdir -p helloworld_result; touch helloworld_result/zerg_was_here.result; echo \"DONE!\""
         }        
     ],
     "vm": {
