@@ -3,10 +3,10 @@ Zerg
 
 Zerg is a tool for launching an arbitrary number of virtual machines and running a task on all of them at once. 
 
-  - Intended for use on a linux host
+  - Tested on Ubuntu 12.04
   - YMMV on OSX, however it is recommended you use the provided dev VM
   - JSON config files
-  - Supports vagrant virtualbox and vagrant-aws providers
+  - Supports vagrant virtualbox, vagrant-aws and vagrant-libvirt providers
   - planned support for more hypervisor orchestration tools and providers
   - [Ruby] 1.9 required
 
@@ -15,14 +15,18 @@ Version
 
 0.0.1
 
-Tech
+Attributions
 -----------
 
 Zerg uses a number of open source projects to work properly:
 
-* [Packer] - tool for building identical machine images from single source file
-* [Vagrant] - tool for building complete development environments
-* [Chef Solo] - Open source utility for using Opscode Chef cookbooks without access to a server
+* [Vagrant]
+* [Chef Solo]
+* [AwesomePrint gem]
+* [JSON Schema gem]
+* [Thor gem]
+* [Highline gem]
+
 
 Develop (OSX)
 --------------
@@ -47,21 +51,29 @@ VBoxManage --version
 Use
 --------------
 
-```sh
+From Rubygems:
+
+```
+gem install zergrush
+```
+
+From source:
+
+```
 cd zerg
 rake install
 ```
 
 cd to a folder where you would like to use zerg from and:
 
-```sh
+```
 zerg init
 zerg rush <task name>
 ```
 
 'zerg init' command initializes two example tasks - helloworld and helloaws. Try them with:
 
-```sh
+```
 zerg rush helloworld
 ```
 
@@ -71,10 +83,11 @@ Note that prior to trying the helloaws task you will need to set some environmen
 - AWS_SECRET_ACCESS_KEY - AWS secret key
 - AWS_KEY_PAIR - AWS key pair name
 - AWS_PRIVATE_KEY_PATH - path to the private key .pem
+- AWS_SECURITY_GROUP - name of an AWS security group to use
 
 You will then be bale to run the task with:
 
-```sh
+```
 zerg rush helloaws
 ```
 
@@ -226,7 +239,6 @@ Not a problem locally, but would be **BAD** for a REST API
 [Vagrant docs]:http://docs.vagrantup.com/v2/virtualbox/configuration.html
 [Vagrant sync folder options]:http://docs.vagrantup.com/v2/synced-folders/basic_usage.html
 [vagrant-aws docs]:https://github.com/mitchellh/vagrant-aws
-[Packer]:http://www.packer.io
 [Chef Solo]:http://docs.opscode.com/chef_solo.html
 [Ruby]:https://www.ruby-lang.org
 [schema]:http://json-schema.org
@@ -234,3 +246,7 @@ Not a problem locally, but would be **BAD** for a REST API
 [chef_client provisioner]:https://docs.vagrantup.com/v2/provisioning/chef_client.html
 [chef common options]:http://docs.vagrantup.com/v2/provisioning/chef_common.html
 [shell provisioner]:http://docs.vagrantup.com/v2/provisioning/shell.html
+[AwesomePrint gem]:https://github.com/michaeldv/awesome_print
+[JSON Schema gem]:https://github.com/hoxworth/json-schema
+[Thor gem]:https://github.com/erikhuda/thor
+[Highline gem]:https://github.com/JEG2/highline
