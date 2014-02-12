@@ -159,9 +159,9 @@ module Zerg
             full_template = Erbalize.erbalize_hash(main_template, sources)
 
             # write the file
-            puts ("Writing #{File.join("#{Dir.pwd}", ".hive", "driver", @name, "Vagrantfile")}...")
-            FileUtils.mkdir_p(File.join("#{Dir.pwd}", ".hive", "driver", @name))
-            File.open(File.join("#{Dir.pwd}", ".hive", "driver", @name, "Vagrantfile"), 'w') { |file| file.write(full_template) }
+            puts ("Writing #{File.join("#{Dir.pwd}", ".hive", "driver", @vm["driver"]["drivertype"], @name, "Vagrantfile")}...")
+            FileUtils.mkdir_p(File.join("#{Dir.pwd}", ".hive", "driver", @vm["driver"]["drivertype"], @name))
+            File.open(File.join("#{Dir.pwd}", ".hive", "driver", @vm["driver"]["drivertype"], @name, "Vagrantfile"), 'w') { |file| file.write(full_template) }
         end
     end
 end

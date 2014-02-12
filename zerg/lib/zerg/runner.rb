@@ -6,6 +6,32 @@ require 'rbconfig'
 module Zerg
     class Runner
 
+        def check_provider(driver, provider)
+            if driver == "vagrant"
+                if provider == "aws"
+                    aws_pid = Process.spawn("vagrant plugin list | grep vagrant-aws")
+                    Process.wait(aws_pid)
+
+                    if $?.exitstatus != 0
+                        aws_pid = Process.spawn("vagrant plugin install vagrant-aws")
+                        Process.wait(aws_pid)
+                        abort("ERROR: vagrant-aws installation failed!") unless $?.exitstatus == 0
+                    end
+                elsif provider == "libvirt"
+                    abort("ERROR: libvirt is only supported on a linux host!") unless /linux|arch/i === RbConfig::CONFIG['host_os']
+                    
+                    libvirt_pid = Process.spawn("vagrant plugin list | grep vagrant-libvirt")
+                    Process.wait(libvirt_pid)
+
+                    if $?.exitstatus != 0
+                        libvirt_pid = Process.spawn("vagrant plugin install vagrant-libvirt")
+                        Process.wait(libvirt_pid)
+                        abort("ERROR: vagrant-libvirt installation failed! Refer to https://github.com/pradels/vagrant-libvirt to install missing dependencies, if any.") unless $?.exitstatus == 0
+                    end
+                end
+            end
+        end
+
         # cross platform way of checking if command is available in PATH
         def which(cmd)
             exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
@@ -46,31 +72,7 @@ module Zerg
                 end
             }
 
-            run(taskname, task["vm"]["driver"]["providertype"], task["instances"], debug)
-        end
-
-        def check_provider(provider)
-            if provider == "aws"
-                aws_pid = Process.spawn("vagrant plugin list | grep vagrant-aws")
-                Process.wait(aws_pid)
-
-                if $?.exitstatus != 0
-                    aws_pid = Process.spawn("vagrant plugin install vagrant-aws")
-                    Process.wait(aws_pid)
-                    abort("ERROR: vagrant-aws installation failed!") unless $?.exitstatus == 0
-                end
-            elsif provider == "libvirt"
-                abort("ERROR: libvirt is only supported on a linux host!") unless /linux|arch/i === RbConfig::CONFIG['host_os']
-                
-                libvirt_pid = Process.spawn("vagrant plugin list | grep vagrant-libvirt")
-                Process.wait(libvirt_pid)
-
-                if $?.exitstatus != 0
-                    libvirt_pid = Process.spawn("vagrant plugin install vagrant-libvirt")
-                    Process.wait(libvirt_pid)
-                    abort("ERROR: vagrant-libvirt installation failed! Refer to https://github.com/pradels/vagrant-libvirt to install missing dependencies, if any.") unless $?.exitstatus == 0
-                end
-            end
+            run(taskname, task["vm"]["driver"]["drivertype"], task["vm"]["driver"]["providertype"], task["instances"], debug)
         end
 
         def cleanup(taskname, task, debug)
@@ -87,7 +89,7 @@ module Zerg
                 task["tasks"])        
             renderer.render
 
-            check_provider(task["vm"]["driver"]["providertype"])
+            check_provider(task["vm"]["driver"]["drivertype"], task["vm"]["driver"]["providertype"])
 
             # run vagrant cleanup
             debug_string = (debug == true) ? " --debug" : ""
@@ -95,8 +97,8 @@ module Zerg
             for index in 0..task["instances"] - 1
                 cleanup_pid = Process.spawn(
                     {
-                        "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname),
-                        "VAGRANT_DEFAULT_PROVIDER" => "#{task["vm"]["driver"]["providertype"]}"
+                        "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", task["vm"]["driver"]["drivertype"], taskname),
+                        "VAGRANT_DEFAULT_PROVIDER" => task["vm"]["driver"]["providertype"]
                     },
                     "vagrant destroy zergling_#{index} --force#{debug_string}")
                 Process.wait(cleanup_pid)
@@ -105,26 +107,26 @@ module Zerg
 
             cleanup_pid = Process.spawn(
                 {
-                    "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
+                    "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", task["vm"]["driver"]["drivertype"], taskname)
                 },
                 "vagrant box remove zergling_#{taskname}_#{task["vm"]["driver"]["providertype"]}#{debug_string} #{task["vm"]["driver"]["providertype"]}")
             Process.wait(cleanup_pid)
         end
 
-        def run(taskname, provider, instances, debug)
+        def run(taskname, driver, provider, instances, debug)
             # TODO: generalize to multiple drivers
             abort("ERROR: Vagrant not installed!") unless which("vagrant") != nil
 
-            check_provider(provider)
+            check_provider(driver, provider)
 
             debug_string = (debug == true) ? " --debug" : ""                
 
             # bring up all of the VMs first.
-            puts("Starting vagrant in #{File.join("#{Dir.pwd}", ".hive", "driver", taskname)}")
+            puts("Starting vagrant in #{File.join("#{Dir.pwd}", ".hive", "driver", driver, taskname)}")
             for index in 0..instances - 1
                 create_pid = Process.spawn(
                     {
-                        "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
+                        "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", driver, taskname)
                     },
                     "vagrant up zergling_#{index} --no-provision --provider=#{provider}#{debug_string}")
                 Process.wait(create_pid)
@@ -143,7 +145,7 @@ module Zerg
             for index in 0..instances - 1
                 provision_pid = Process.spawn(
                     {
-                        "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname),
+                        "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", driver, taskname),
                         "VAGRANT_DEFAULT_PROVIDER" => "#{provider}"
                     },
                     "vagrant provision zergling_#{index}#{debug_string}")
@@ -168,7 +170,8 @@ module Zerg
             for index in 0..instances - 1
                 halt_pid = Process.spawn(
                     {
-                        "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", taskname)
+                        "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", driver, taskname),
+                        "VAGRANT_DEFAULT_PROVIDER" => "#{provider}"
                     },
                     "vagrant halt zergling_#{index}#{debug_string}")
                 Process.wait(halt_pid)

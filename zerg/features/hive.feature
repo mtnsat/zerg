@@ -13,8 +13,8 @@ Feature: Hive
                     "instances": 3,
                     "tasks": [
                         {
-                            "type": "inline",
-                            "payload": "echo \"ZERG RUSH!\""
+                            "type": "shell",
+                            "inline": "echo \"ZERG RUSH!\""
                         }        
                     ],
                     "vm": {
@@ -33,7 +33,7 @@ Feature: Hive
                                 "virtualbox.customize ['modifyvm', :id,  '--nictype3', 'virtio']"
                             ]
                         },
-                        "basebox": "http://files.vagrantup.com/precise64.box",
+                        "basebox": "http://files.vagrantup.com/precise32.box",
                         "private_network": true
                     }
                 }
@@ -45,8 +45,8 @@ Feature: Hive
                     "instances": 3,
                     "tasks": [
                         {
-                            "type": "inline",
-                            "payload": "echo \"ZERG RUSH PRIME!\""
+                            "type": "shell",
+                            "inline": "echo \"ZERG RUSH PRIME!\""
                         }        
                     ],
                     "vm": {
@@ -100,8 +100,8 @@ Feature: Hive
                 "instances": 1,
                 "tasks": [
                     {
-                        "type": "inline",
-                        "payload": "echo \"ARRRRRRRUUUUUBAAAAAAAA!\""
+                        "type": "shell",
+                        "inline": "echo \"ARRRRRRRUUUUUBAAAAAAAA!\""
                     }        
                 ],
                 "vm": {
@@ -118,21 +118,21 @@ Feature: Hive
             }
             """
         
-        When I run `zerg hive get arubatask.ke`
+        When I run `zerg hive import arubatask.ke`
         Then the output should contain:
             """
             SUCCESS!
             """
         And the exit status should be 0
 
-        When I run `zerg hive get arubatask.ke`
+        When I run `zerg hive import arubatask.ke`
         Then the output should contain:
             """
             ERROR: 'arubatask.ke' already exists in hive!
             """
         And the exit status should be 1
 
-        When I run `zerg hive get arubatask.ke --force`
+        When I run `zerg hive import arubatask.ke --force`
         Then the output should contain:
             """
             SUCCESS!
@@ -167,8 +167,8 @@ Feature: Hive
                 "instances": 3,
                 "tasks": [
                     {
-                        "type": "inline",
-                        "payload": "echo \"ZERG RUSH!\""
+                        "type": "shell",
+                        "inline": "echo \"ZERG RUSH!\""
                     }        
                 ],
                 "vm": {
@@ -187,7 +187,7 @@ Feature: Hive
                             "virtualbox.customize ['modifyvm', :id,  '--nictype3', 'virtio']"
                         ]
                     },
-                    "basebox": "http://files.vagrantup.com/precise64.box",
+                    "basebox": "http://files.vagrantup.com/precise32.box",
                     "private_network": true
                 }
             }
@@ -199,8 +199,8 @@ Feature: Hive
                 "instances": 3,
                 "tasks": [
                     {
-                        "type": "inline",
-                        "payload": "echo \"ZERG RUSH PRIME!\""
+                        "type": "shell",
+                        "inline": "echo \"ZERG RUSH PRIME!\""
                     }        
                 ],
                 "vm": {
