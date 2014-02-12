@@ -1,10 +1,34 @@
+#--
+
+# Copyright 2014 by MTN Sattelite Communications
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to
+# deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+# sell copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+# IN THE SOFTWARE.
+#++
+
 require 'thor'
 require 'zerg'
 require 'zerg/generators/hivegen'
 
 module Zerg
     class HiveCLI < Thor
-        
+        class_option :force, :type => :boolean, :banner => "force overwrite of files" 
+
         # hack (https://github.com/erikhuda/thor/issues/261#issuecomment-16880836)
         # to get around thor showing klass name snake case in subcommand help (instead of subcommand name) 
         package_name "hive"
@@ -22,20 +46,21 @@ module Zerg
             puts Zerg::Hive.list
         end
 
-        desc "import [FILE] [--force]", "import a .ke file into the hive folder"
-        option :force, :type => :boolean
+        desc "import [FILE]", "import a .ke file into the hive folder"
         def import(file)
             puts Zerg::Hive.import(file, options[:force])
         end
 
-        desc "remove [TASK] [--force]", "remove a task from hive"
-        option :force, :type => :boolean
+        desc "remove [TASK]", "remove a task from hive"
         def remove(file)
             puts Zerg::Hive.remove(file, options[:force])
         end
     end
 
-    class CLI < Thor  
+    class CLI < Thor 
+        class_option :force, :type => :boolean, :banner => "force overwrite of files" 
+        class_option :debug, :type => :boolean, :banner => "add debug option to driver"  
+
         def self.exit_on_failure?
             true
         end
@@ -45,14 +70,12 @@ module Zerg
             puts Zerg::Generators::HiveGen.start
         end
 
-        desc "rush [TASK] [--debug]", "runs a task from hive"
-        option :debug, :type => :boolean
+        desc "rush [TASK]", "runs a task from hive"
         def rush(task)
             puts Zerg::Runner.rush(task, options[:debug])
         end
 
-        desc "clean [TASK] [--debug]", "cleans a task"
-        option :debug, :type => :boolean
+        desc "clean [TASK]", "cleans a task"
         def clean(task)
             puts Zerg::Runner.clean(task, options[:debug])
         end

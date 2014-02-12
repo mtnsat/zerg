@@ -2,17 +2,17 @@
 require File.expand_path("../lib/zerg/version", __FILE__)
 
 Gem::Specification.new do |s|
-  s.name        = "zerg"
+  s.name        = "zergrush"
   s.version     = Zerg::VERSION
   s.platform    = Gem::Platform::RUBY
-  s.authors     = ["Marat Garafutdinov"]
-  s.email       = ["maratoid@gmail.com"]
+  s.authors     = ["MTN Satellite Communications"]
+  s.email       = ["Marat.Garafutdinov@mtnsat.com"]
   s.homepage    = "https://github.com/MTNSatelliteComm/zerg"
   s.summary     = "Zerg is a tool for launching an arbitrary number of virtual machines and running a task on all of them at once"
   s.description = "Zerg is a tool for launching an arbitrary number of virtual machines and running a task on all of them at once"
 
   s.required_rubygems_version = ">= 1.3.6"
-  s.rubyforge_project         = "zerg"
+  s.rubyforge_project         = "zergrush"
 
   s.add_development_dependency "bundler", ">= 1.0.0"
   s.add_development_dependency "rspec", "~> 2.6"
