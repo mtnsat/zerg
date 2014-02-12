@@ -11,7 +11,6 @@ module Zerg
             def create_hive
                 load_path = (ENV['HIVE_CWD'] == nil) ? File.join("#{Dir.pwd}", ".hive") : File.join("#{ENV['HIVE_CWD']}", ".hive")
                 empty_directory "#{File.join(load_path, "driver")}"
-                empty_directory "#{File.join(load_path, "basebox")}"
             end
 
             def copy_sample_task

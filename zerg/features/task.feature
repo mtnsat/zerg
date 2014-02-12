@@ -6,7 +6,7 @@ Feature: Tasks
     @no-clobber
     Scenario: Cleaning a task
         When I run `zerg init`
-        When I run `zerg clean helloaws`
+        When I run `zerg clean helloworld`
         Then the output should contain:
         """
         SUCCESS!
