@@ -104,7 +104,7 @@ Zerg task files are json files that are loaded by zerg, validated, and then tran
     - options - array of options corresponding to [Vagrant sync folder options]
 - tasks - array of tasks
     - type - Type of task payload. 'shell', 'chef_client' or 'chef_solo'
-    - inline and script task parameters: 
+    - shell task parameters: 
         - [shell provisioner]
     - chef_client and chef_solo task parameters map directly to Vagrant provisioner docs, **EXCEPT the node_name parameter**:
         - [chef_solo provisioner]
@@ -113,11 +113,11 @@ Zerg task files are json files that are loaded by zerg, validated, and then tran
 - vm - description of all VM instances.
     - driver - properties of a hypervisor 'driver'. Currenlty only [Vagrant] is supported
         - drivertype - Type of the 'driver' Only 'vagrant' is currently supported.
-        - providertype - Hypervisor provider. 'virtualbox' or 'aws'
-        - provider_options - Virtualbox or Aws options. Array of strings - each one is a vagrantfile string documented at [Vagrant docs] and [vagrant-aws docs] respectively.
+        - providertype - Hypervisor provider. 'virtualbox', 'aws', 'libvirt'
+        - provider_options - provider options. Array of strings - each one is a vagrantfile string documented at [Vagrant docs], [vagrant-aws docs] and [vagrant-libvirt docs].
         - basebox - Path to the vagrant base box. File path or URL
-        - private_network - setup a host-only network between host and VM. True or false. Only valid for 'virtualbox' providertype.
-        - bridge_description - specifies which host adapter to bridge. Should be a full description string of the host NIC, as seen by VirtualBox. Only valid for 'virtualbox' providertype.
+        - private_network - setup a host-only network between host and VM. True or false. Only valid for 'virtualbox' and 'libvirt' providertype.
+        - bridge_description - specifies which host adapter to bridge. Should be a full description string of the host NIC, as seen by VirtualBox. Only valid for 'virtualbox' and 'libvirt' providertype.
 
 Example task
 --------------
@@ -239,6 +239,7 @@ Not a problem locally, but would be **BAD** for a REST API
 [Vagrant docs]:http://docs.vagrantup.com/v2/virtualbox/configuration.html
 [Vagrant sync folder options]:http://docs.vagrantup.com/v2/synced-folders/basic_usage.html
 [vagrant-aws docs]:https://github.com/mitchellh/vagrant-aws
+[vagrant-libvirt docs]:https://github.com/pradels/vagrant-libvirt
 [Chef Solo]:http://docs.opscode.com/chef_solo.html
 [Ruby]:https://www.ruby-lang.org
 [schema]:http://json-schema.org
