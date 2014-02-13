@@ -60,7 +60,7 @@ Feature: Hive
                                 "aws.keypair_name = \"#{ENV['AWS_KEY_PAIR']}\"",
                                 "aws.ami = 'ami-3fec7956'",
                                 "aws.region = 'us-east-1'",
-                                "aws.security_groups = [ 'vagrant' ]",
+                                "aws.security_groups = [ \"#{ENV['AWS_SECURITY_GROUP']}\" ]",
                                 "override.ssh.username = 'ubuntu'",
                                 "override.ssh.private_key_path = \"#{ENV['AWS_PRIVATE_KEY_PATH']}\""
                             ]
@@ -214,7 +214,7 @@ Feature: Hive
                             "aws.keypair_name = \"#{ENV['AWS_KEY_PAIR']}\"",
                             "aws.ami = 'ami-3fec7956'",
                             "aws.region = 'us-east-1'",
-                            "aws.security_groups = [ 'vagrant' ]",
+                            "aws.security_groups = [ \"#{ENV['AWS_SECURITY_GROUP']}\" ]",
                             "override.ssh.username = 'ubuntu'",
                             "override.ssh.private_key_path = \"#{ENV['AWS_PRIVATE_KEY_PATH']}\""
                         ]

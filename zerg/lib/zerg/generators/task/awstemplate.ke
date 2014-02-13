@@ -17,7 +17,7 @@
                 "<%= config[:providertype] %>.keypair_name = \"#{ENV['AWS_KEY_PAIR']}\"",
                 "<%= config[:providertype] %>.ami = 'ami-3fec7956'",
                 "<%= config[:providertype] %>.region = 'us-east-1'",
-                "<%= config[:providertype] %>.security_groups = [ 'vagrant' ]",
+                "<%= config[:providertype] %>.security_groups = [ \"#{ENV['AWS_SECURITY_GROUP']}\" ]",
                 "override.ssh.username = 'ubuntu'",
                 "override.ssh.private_key_path = \"#{ENV['AWS_PRIVATE_KEY_PATH']}\""
             ]

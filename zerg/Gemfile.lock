@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    zerg (0.0.1)
+    zergrush (0.0.1)
       awesome_print
       highline
       json-schema
@@ -52,4 +52,4 @@ DEPENDENCIES
   cucumber
   rake
   rspec (~> 2.6)
-  zerg!
+  zergrush!
