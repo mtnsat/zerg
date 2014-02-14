@@ -10,11 +10,6 @@ Zerg is a tool for launching an arbitrary number of virtual machines and running
   - planned support for more hypervisor orchestration tools and providers
   - [Ruby] 1.9 required
 
-Version
-----
-
-0.0.1
-
 Attributions
 -----------
 
