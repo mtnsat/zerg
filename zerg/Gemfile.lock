@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    zergrush (0.0.1)
+    zergrush (0.0.2)
       awesome_print
       highline
       json-schema
