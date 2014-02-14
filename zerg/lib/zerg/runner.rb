@@ -56,7 +56,7 @@ module Zerg
         end
 
         # cross platform way of checking if command is available in PATH
-        def which(cmd)
+        def self.which(cmd)
             exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
             ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
                 exts.each { |ext|
@@ -95,11 +95,11 @@ module Zerg
                 end
             }
 
-            run(taskname, task["vm"]["driver"]["drivertype"], task["vm"]["driver"]["providertype"], task["instances"], debug)
+
+            run(taskname, task["vm"]["driver"]["drivertype"], task["vm"]["driver"]["providertype"], task["instances"], (task["vm"]["keepalive"] == nil) ? false : task["vm"]["keepalive"], debug)
         end
 
         def cleanup(taskname, task, debug)
-            abort("ERROR: Vagrant not installed!") unless which("vagrant") != nil
             puts ("Will cleanup task #{taskname}...")
 
             # TODO: generalize for multiple drivers
@@ -136,10 +136,25 @@ module Zerg
             Process.wait(cleanup_pid)
         end
 
-        def run(taskname, driver, provider, instances, debug)
-            # TODO: generalize to multiple drivers
-            abort("ERROR: Vagrant not installed!") unless which("vagrant") != nil
+        def halt(taskname, driver, provider, instances, debug)
+            puts("Halting all vagrant virtual machines...")
+            debug_string = (debug == true) ? " --debug" : ""  
 
+            # halt all machines
+            halt_pid = nil
+            for index in 0..instances - 1
+                halt_pid = Process.spawn(
+                    {
+                        "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", driver, taskname),
+                        "VAGRANT_DEFAULT_PROVIDER" => "#{provider}"
+                    },
+                    "vagrant halt zergling_#{index}#{debug_string}")
+                Process.wait(halt_pid)
+                abort("ERROR: vagrant halt failed on machine zergling_#{index}!") unless $?.exitstatus == 0
+            end
+        end
+
+        def run(taskname, driver, provider, instances, keepalive, debug)
             check_provider(driver, provider)
 
             debug_string = (debug == true) ? " --debug" : ""                
@@ -187,18 +202,10 @@ module Zerg
                 }.join 
             }
 
-            puts("DONE! Halting all vagrant virtual machines...")
-            # halt all machines
-            halt_pid = nil
-            for index in 0..instances - 1
-                halt_pid = Process.spawn(
-                    {
-                        "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", driver, taskname),
-                        "VAGRANT_DEFAULT_PROVIDER" => "#{provider}"
-                    },
-                    "vagrant halt zergling_#{index}#{debug_string}")
-                Process.wait(halt_pid)
-                abort("ERROR: vagrant halt failed on machine zergling_#{index}!") unless $?.exitstatus == 0
+            if keepalive == false
+                halt(taskname, driver, provider, instances, debug)
+            else
+                puts "Will leave instances running."
             end
 
             abort("ERROR: Finished with errors in: #{errors.to_s}") unless errors.length == 0
@@ -206,6 +213,8 @@ module Zerg
         end
 
         def self.rush(task, debug)
+            abort("ERROR: Vagrant not installed!") unless which("vagrant") != nil
+
             # load the hive first
             Zerg::Hive.instance.load
 
@@ -217,7 +226,24 @@ module Zerg
             runner.process(task, Zerg::Hive.instance.hive[task], debug);
         end
 
+        def self.halt(task, debug)
+            abort("ERROR: Vagrant not installed!") unless which("vagrant") != nil
+
+            # load the hive first
+            Zerg::Hive.instance.load
+
+            puts "Loaded hive. Looking for task #{task}..."
+            abort("ERROR: Task #{task} not found in current hive!") unless Zerg::Hive.instance.hive.has_key?(task) 
+
+            # halt!
+            runner = Runner.new
+            runner.halt(task, Zerg::Hive.instance.hive[task]["vm"]["driver"]["drivertype"], Zerg::Hive.instance.hive[task]["vm"]["driver"]["providertype"], Zerg::Hive.instance.hive[task]["instances"], debug)
+            puts("SUCCESS!")
+        end
+
         def self.clean(task, debug)
+            abort("ERROR: Vagrant not installed!") unless which("vagrant") != nil
+
             # load the hive first
             Zerg::Hive.instance.load
 

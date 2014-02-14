@@ -306,6 +306,10 @@
         "bridge_description": {
           "type": "string",
           "id": "com.mtnsat.zerg.json.ke.vm.bridge_description"
+        },
+        "keepalive": {
+          "type": "boolean",
+          "id": "com.mtnsat.zerg.json.ke.vm.keepalive"
         }
       },
       "required": [

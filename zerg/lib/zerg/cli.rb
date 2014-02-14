@@ -78,6 +78,11 @@ module Zerg
         desc "clean [TASK]", "cleans a task"
         def clean(task)
             puts Zerg::Runner.clean(task, options[:debug])
+        end 
+
+        desc "halt [TASK]", "stops all task vm instances"
+        def halt(task)
+            puts Zerg::Runner.halt(task, options[:debug])
         end
           
         register(HiveCLI, 'hive', 'hive [COMMAND]', 'Manage hive - a collection of task descriptions.')
