@@ -115,9 +115,10 @@ Zerg task files are json files that are loaded by zerg, validated, and then tran
         - drivertype - Type of the 'driver' Only 'vagrant' is currently supported.
         - providertype - Hypervisor provider. 'virtualbox', 'aws', 'libvirt'
         - provider_options - provider options. Array of strings - each one is a vagrantfile string documented at [Vagrant docs], [vagrant-aws docs] and [vagrant-libvirt docs].
-        - basebox - Path to the vagrant base box. File path or URL
-        - private_network - setup a host-only network between host and VM. True or false. Only valid for 'virtualbox' and 'libvirt' providertype.
-        - bridge_description - specifies which host adapter to bridge. Should be a full description string of the host NIC, as seen by VirtualBox. Only valid for 'virtualbox' and 'libvirt' providertype.
+    - basebox - Path to the vagrant base box. File path or URL
+    - private_network - setup a host-only network between host and VM. True or false. Only valid for 'virtualbox' and 'libvirt' providertype.
+    - bridge_description - specifies which host adapter to bridge. Should be a full description string of the host NIC, as seen by VirtualBox. Only valid for 'virtualbox' and 'libvirt' providertype.
+    - keepalive - if se to tru, VMs will be left running after all tasks are finished. 'zerg halt <task>' to stop.
 
 Example task
 --------------
