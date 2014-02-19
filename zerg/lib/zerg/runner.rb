@@ -245,14 +245,19 @@ module Zerg
             abort("ERROR: Vagrant not installed!") unless which("vagrant") != nil
 
             # load the hive first
-            Zerg::Hive.instance.load
+            #Zerg::Hive.instance.load
 
-            puts "Loaded hive. Looking for task #{task}..."
-            abort("ERROR: Task #{task} not found in current hive!") unless Zerg::Hive.instance.hive.has_key?(task) 
+            #puts "Loaded hive. Looking for task #{task}..."
+            #abort("ERROR: Task #{task} not found in current hive!") unless Zerg::Hive.instance.hive.has_key?(task) 
 
-            runner = Runner.new
-            runner.cleanup(task, Zerg::Hive.instance.hive[task], debug);
-            puts("SUCCESS!")
+            #runner = Runner.new
+            #runner.cleanup(task, Zerg::Hive.instance.hive[task], debug);
+            #puts("SUCCESS!")
+
+            pmgr = ZergGemPlugin::Manager.instance
+            pmgr.load
+            list = pmgr.plugins["/driver"]
+            puts list.ai
         end
     end
 end

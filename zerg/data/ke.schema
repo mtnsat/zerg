@@ -258,11 +258,7 @@
               }
             ]
           }
-        },
-        "required": [
-            "type"
-        ],
-        "additionalProperties": false
+        }
       }
     },
     "vm": {

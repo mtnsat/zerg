@@ -21,10 +21,6 @@
 # IN THE SOFTWARE.
 #++
 
-require "zerg/hive"
-require "zerg/runner"
-require "zerg/driver_renderer"
-require "zerg/gem_plugin"
-module Zerg
-  
+module ZergrushVagrant
+  VERSION = "0.0.1"
 end

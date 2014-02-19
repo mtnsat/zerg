@@ -8,6 +8,7 @@ Gem::Specification.new do |s|
   s.authors     = ["MTN Satellite Communications"]
   s.email       = ["Marat.Garafutdinov@mtnsat.com"]
   s.homepage    = "https://github.com/MTNSatelliteComm/zerg"
+  s.license     = "MIT"
   s.summary     = "Zerg is a tool for launching an arbitrary number of virtual machines and running a task on all of them at once"
   s.description = "Zerg is a tool for launching an arbitrary number of virtual machines and running a task on all of them at once"
 
