@@ -99,43 +99,6 @@ module Zerg
             run(taskname, task["vm"]["driver"]["drivertype"], task["vm"]["driver"]["providertype"], task["instances"], (task["vm"]["keepalive"] == nil) ? false : task["vm"]["keepalive"], debug)
         end
 
-        def cleanup(taskname, task, debug)
-            puts ("Will cleanup task #{taskname}...")
-
-            # TODO: generalize for multiple drivers
-            # render driver template
-            renderer = DriverRenderer.new(
-                task["vm"], 
-                taskname, 
-                task["instances"],
-                task["synced_folders"],  
-                task["tasks"])        
-            renderer.render
-
-            check_provider(task["vm"]["driver"]["drivertype"], task["vm"]["driver"]["providertype"])
-
-            # run vagrant cleanup
-            debug_string = (debug == true) ? " --debug" : ""
-            
-            for index in 0..task["instances"] - 1
-                cleanup_pid = Process.spawn(
-                    {
-                        "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", task["vm"]["driver"]["drivertype"], taskname),
-                        "VAGRANT_DEFAULT_PROVIDER" => task["vm"]["driver"]["providertype"]
-                    },
-                    "vagrant destroy zergling_#{index} --force#{debug_string}")
-                Process.wait(cleanup_pid)
-                abort("ERROR: vagrant failed!") unless $?.exitstatus == 0
-            end
-
-            cleanup_pid = Process.spawn(
-                {
-                    "VAGRANT_CWD" => File.join("#{Dir.pwd}", ".hive", "driver", task["vm"]["driver"]["drivertype"], taskname)
-                },
-                "vagrant box remove zergling_#{taskname}_#{task["vm"]["driver"]["providertype"]}#{debug_string} #{task["vm"]["driver"]["providertype"]}")
-            Process.wait(cleanup_pid)
-        end
-
         def halt(taskname, driver, provider, instances, debug)
             puts("Halting all vagrant virtual machines...")
             debug_string = (debug == true) ? " --debug" : ""  
@@ -245,19 +208,19 @@ module Zerg
             abort("ERROR: Vagrant not installed!") unless which("vagrant") != nil
 
             # load the hive first
-            #Zerg::Hive.instance.load
+            Zerg::Hive.instance.load
 
-            #puts "Loaded hive. Looking for task #{task}..."
-            #abort("ERROR: Task #{task} not found in current hive!") unless Zerg::Hive.instance.hive.has_key?(task) 
+            puts "Loaded hive. Looking for task #{task}..."
+            abort("ERROR: Task #{task} not found in current hive!") unless Zerg::Hive.instance.hive.has_key?(task) 
 
-            #runner = Runner.new
-            #runner.cleanup(task, Zerg::Hive.instance.hive[task], debug);
-            #puts("SUCCESS!")
-
-            pmgr = ZergGemPlugin::Manager.instance
-            pmgr.load
-            vagrant = pmgr.create("/driver/vagrant")
-            vagrant.clean
+            begin
+                pmgr = ZergGemPlugin::Manager.instance
+                pmgr.load
+                driver = pmgr.create("/driver/#{Zerg::Hive.instance.hive[task]["vm"]["driver"]["drivertype"]}")
+                driver.clean Zerg::Hive.instance.load_path, task, Zerg::Hive.instance.hive[task], debug
+            rescue ZergGemPlugin::PluginNotLoaded
+                abort("ERROR: driver #{Zerg::Hive.instance.hive[task]["vm"]["driver"]["drivertype"]} not found. Did you install the plugin gem?")
+            end
         end
     end
 end

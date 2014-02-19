@@ -31,7 +31,7 @@ require 'highline/import'
 module Zerg
     class Hive
         include Singleton
-        attr_reader :hive
+        attr_reader :hive, :load_path
         
         def loaded
             @loaded || false
@@ -42,12 +42,12 @@ module Zerg
                 return
             end
 
-            load_path = (ENV['HIVE_CWD'] == nil) ? File.join("#{Dir.pwd}", ".hive") : File.join("#{ENV['HIVE_CWD']}", ".hive")
-            abort("ERROR: '.hive' not found at #{load_path}. Run 'zerg init', change HIVE_CWD or run zerg from a different path.") unless File.directory?(load_path) 
+            @load_path = (ENV['HIVE_CWD'] == nil) ? File.join("#{Dir.pwd}", ".hive") : File.join("#{ENV['HIVE_CWD']}", ".hive")
+            abort("ERROR: '.hive' not found at #{@load_path}. Run 'zerg init', change HIVE_CWD or run zerg from a different path.") unless File.directory?(@load_path) 
 
             # load all .ke files into one big hash
             @hive = Hash.new
-            Dir.glob(File.join("#{load_path}", "*.ke")) do |ke_file|
+            Dir.glob(File.join("#{@load_path}", "*.ke")) do |ke_file|
                 # do work on files ending in .rb in the desired directory
                 begin 
                     ke_file_hash = JSON.parse( IO.read(ke_file) )
@@ -82,10 +82,9 @@ module Zerg
         end
 
         def self.verify
-            load_path = (ENV['HIVE_CWD'] == nil) ? File.join("#{Dir.pwd}", ".hive") : File.join("#{ENV['HIVE_CWD']}", ".hive")
-            abort("ERROR: '.hive' not found at #{load_path}. Run 'zerg init', change HIVE_CWD or run zerg from a different path.") unless File.directory?(load_path) 
+            instance.load
 
-            Dir.glob(File.join("#{load_path}", "*.ke")) do |ke_file|
+            Dir.glob(File.join("#{@load_path}", "*.ke")) do |ke_file|
                 begin 
                     ke_file_hash = JSON.parse( IO.read(ke_file) )
 
@@ -103,10 +102,9 @@ module Zerg
         end
 
         def self.import(file, force)
-            load_path = (ENV['HIVE_CWD'] == nil) ? File.join("#{Dir.pwd}", ".hive") : File.join("#{ENV['HIVE_CWD']}", ".hive")
-            abort("ERROR: '.hive' not found at #{load_path}. Run 'zerg init', change HIVE_CWD or run zerg from a different path.") unless File.directory?(load_path) 
+            instance.load
             abort("ERROR: '#{file}' not found!") unless File.exist?(file) 
-            abort("ERROR: '#{File.basename(file)}' already exists in hive!") unless !File.exist?(File.join(load_path, File.basename(file))) || force == true
+            abort("ERROR: '#{File.basename(file)}' already exists in hive!") unless !File.exist?(File.join(@load_path, File.basename(file))) || force == true
 
             # check the file against schema.
             begin
@@ -114,7 +112,7 @@ module Zerg
                 errors = JSON::Validator.fully_validate(File.join("#{File.dirname(__FILE__)}", "../../data/ke.schema"), ke_file_hash, :errors_as_objects => true)
                 abort("ERROR: #{file} failed validation. Errors: #{errors.ai}") unless errors.empty?
 
-                FileUtils.cp(file, File.join(load_path, File.basename(file)))
+                FileUtils.cp(file, File.join(@load_path, File.basename(file)))
             rescue JSON::ParserError => err
                 abort("ERROR: Could not parse #{file}. Likely invalid JSON.")
             end
@@ -122,12 +120,11 @@ module Zerg
         end
 
         def self.remove(taskname, force)
-            load_path = (ENV['HIVE_CWD'] == nil) ? File.join("#{Dir.pwd}", ".hive") : File.join("#{ENV['HIVE_CWD']}", ".hive")
-            abort("ERROR: '.hive' not found at #{load_path}. Run 'zerg init', change HIVE_CWD or run zerg from a different path.") unless File.directory?(load_path) 
-            abort("ERROR: '#{taskname}' not found!") unless File.exist?(File.join(load_path, "#{taskname}.ke")) 
+            instance.load 
+            abort("ERROR: '#{taskname}' not found!") unless File.exist?(File.join(@load_path, "#{taskname}.ke")) 
 
             # check the file against schema.
-            taskfile = File.join(load_path, "#{taskname}.ke")
+            taskfile = File.join(@load_path, "#{taskname}.ke")
 
             agreed = true
             if force != true
@@ -136,8 +133,8 @@ module Zerg
 
             abort("Cancelled!") unless agreed == true
 
-            FileUtils.rm_rf(File.join(load_path, "driver", taskname))
-            FileUtils.rm(File.join(load_path, "#{taskname}.ke"))
+            FileUtils.rm_rf(File.join(@load_path, "driver", taskname))
+            FileUtils.rm(File.join(@load_path, "#{taskname}.ke"))
 
             puts "SUCCESS!"
         end

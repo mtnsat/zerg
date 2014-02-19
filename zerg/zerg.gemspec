@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.summary     = "Zerg is a tool for launching an arbitrary number of virtual machines and running a task on all of them at once"
   s.description = "Zerg is a tool for launching an arbitrary number of virtual machines and running a task on all of them at once"
 
-  s.required_rubygems_version = ">= 1.3.6"
+  s.required_rubygems_version = ">= 2.0.0"
   s.rubyforge_project         = "zergrush"
 
   s.add_development_dependency "bundler", ">= 1.0.0"

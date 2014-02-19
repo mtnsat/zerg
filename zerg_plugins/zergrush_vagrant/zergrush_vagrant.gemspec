@@ -26,4 +26,7 @@ Gem::Specification.new do |s|
   s.files        = `git ls-files`.split("\n")
   s.executables  = `git ls-files`.split("\n").map{|f| f =~ /^bin\/(.*)/ ? $1 : nil}.compact
   s.require_path = 'lib'
+
+  # metadata that marks this as a zergrush plugin
+  s.metadata = { "zergrushplugin" => "driver" }
 end
