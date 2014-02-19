@@ -163,7 +163,7 @@ module ZergGemPlugin
       
       Gem::Specification.each { |gem|
         # don't load gems more than once
-        next if @gems.has_key? gem.name_tuple.name        
+        next if @gems.has_key? gem.name        
         check = needs.dup
 
         # rolls through the depends and inverts anything it finds
@@ -181,10 +181,10 @@ module ZergGemPlugin
           
           # Previously was set wrong, we already have the correct gem path!
           #gem_dir = File.join(Gem.dir, "gems", "#{gem.name}-#{gem.version}")
-          gem_dir = File.join(Gem.dir, "gems", path)
+          #gem_dir = File.join(Gem.dir, "gems", gem.gem_dir)
           
-          require File.join(gem_dir, "lib", gem.name, "init.rb")
-          @gems[gem.name] = gem_dir
+          require File.join(gem.gem_dir, "lib", gem.name, "init.rb")
+          @gems[gem.name] = gem.gem_dir
         end
       }
 
@@ -331,7 +331,7 @@ module ZergGemPlugin
   # use this returned class to create the new class, GemPlugin::Base.inherited
   # gets called.  GemPlugin::Base.inherited then uses the set category, class name,
   # and class to register the plugin in the right way.
-  def GemPlugin::Plugin(c)
+  def ZergGemPlugin::Plugin(c)
     Base.category = c
     Base
   end

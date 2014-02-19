@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.summary     = "Vagrant driver for zergrush"
   s.description = "Vagrant driver for zergrush"
 
-  s.required_rubygems_version = ">= 1.3.6"
+  s.required_rubygems_version = ">= 2.0.0"
   s.rubyforge_project         = "zergrush_vagrant"
 
   s.add_development_dependency "bundler", ">= 1.0.0"

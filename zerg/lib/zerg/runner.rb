@@ -256,8 +256,8 @@ module Zerg
 
             pmgr = ZergGemPlugin::Manager.instance
             pmgr.load
-            list = pmgr.plugins["/driver"]
-            puts list.ai
+            vagrant = pmgr.create("/driver/vagrant")
+            vagrant.clean
         end
     end
 end

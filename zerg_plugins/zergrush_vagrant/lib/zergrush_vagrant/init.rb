@@ -1,4 +1,4 @@
-require 'zergrush'
+require 'zerg'
 
 # give this class the name you want for your command zergrush_vagrant
 class Vagrant < ZergGemPlugin::Plugin "/driver"
