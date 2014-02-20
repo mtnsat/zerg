@@ -72,8 +72,9 @@ Feature: Hive
                 """
             And the exit status should be 0
 
-    @no-clobber
+    @announce
     Scenario: Verifying hive
+        When I run `zerg init`
         When I run `zerg hive verify`
         Then the output should contain: 
             """

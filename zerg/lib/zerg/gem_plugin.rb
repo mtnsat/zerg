@@ -166,6 +166,8 @@ module ZergGemPlugin
                 next if @gems.has_key? gem.name        
                 check = needs.dup
 
+                puts gem.ai
+
                 # rolls through the depends and inverts anything it finds
                 gem.dependencies.each do |dep|
                     # this will fail if a gem is depended more than once
@@ -178,7 +180,6 @@ module ZergGemPlugin
                 # makes them false so we'll skip this gem if any excludes are found
                 if (check.select {|name,test| !test}).length == 0
                     # looks like no needs were set to false, so it's good
-
                     if gem.metadata["zergrushplugin"] != nil
                         require File.join(gem.gem_dir, "lib", gem.name, "init.rb")
                         @gems[gem.name] = gem.gem_dir

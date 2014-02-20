@@ -17,8 +17,8 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "bundler", ">= 1.0.0"
   s.add_development_dependency "rake"
+  s.add_development_dependency "zergrush"
 
-  s.add_dependency "zergrush"
   s.add_dependency "vagrant-omnibus"
   s.add_dependency "vagrant-aws"
   s.add_dependency "vagrant-libvirt"

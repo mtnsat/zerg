@@ -122,9 +122,24 @@ module Zerg
 
             # check the file against schema.
             begin
-                ke_file_hash = JSON.parse( IO.read(file) )
-                errors = JSON::Validator.fully_validate(File.join("#{File.dirname(__FILE__)}", "../../data/ke.schema"), ke_file_hash, :errors_as_objects => true)
-                abort("ERROR: #{file} failed validation. Errors: #{errors.ai}") unless errors.empty?
+
+                ke_file_hash = JSON.parse( File.open(file, 'r').read )
+
+                # get the tasks schema piece from the driver
+                pmgr = ZergGemPlugin::Manager.instance
+                pmgr.load
+                abort("ERROR: 'drivertype' is missing from #{ke_file}") unless ke_file_hash["vm"]["driver"]["drivertype"] != nil
+                driver = pmgr.create("/driver/#{ke_file_hash["vm"]["driver"]["drivertype"]}")
+                driver_schema = driver.task_schema
+
+                schema_template = File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "data", "ke.schema"), 'r').read
+                sources = {
+                    :driver_tasks_schema => driver_schema
+                }
+                full_schema = JSON.parse(Erbalize.erbalize_hash(schema_template, sources))
+
+                errors = JSON::Validator.fully_validate(full_schema, ke_file_hash, :errors_as_objects => true)
+                abort("ERROR: #{ke_file} failed validation. Errors: #{errors.ai}") unless errors.empty?
 
                 FileUtils.cp(file, File.join(instance.load_path, File.basename(file)))
             rescue JSON::ParserError => err
