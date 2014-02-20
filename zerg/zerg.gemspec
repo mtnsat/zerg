@@ -8,10 +8,11 @@ Gem::Specification.new do |s|
   s.authors     = ["MTN Satellite Communications"]
   s.email       = ["Marat.Garafutdinov@mtnsat.com"]
   s.homepage    = "https://github.com/MTNSatelliteComm/zerg"
+  s.license     = "MIT"
   s.summary     = "Zerg is a tool for launching an arbitrary number of virtual machines and running a task on all of them at once"
   s.description = "Zerg is a tool for launching an arbitrary number of virtual machines and running a task on all of them at once"
 
-  s.required_rubygems_version = ">= 1.3.6"
+  s.required_rubygems_version = ">= 2.0.0"
   s.rubyforge_project         = "zergrush"
 
   s.add_development_dependency "bundler", ">= 1.0.0"
@@ -24,6 +25,7 @@ Gem::Specification.new do |s|
   s.add_dependency "json-schema"
   s.add_dependency "thor"
   s.add_dependency "highline"
+  s.add_dependency "zergrush_vagrant"
 
   s.files        = `git ls-files`.split("\n")
   s.executables  = `git ls-files`.split("\n").map{|f| f =~ /^bin\/(.*)/ ? $1 : nil}.compact

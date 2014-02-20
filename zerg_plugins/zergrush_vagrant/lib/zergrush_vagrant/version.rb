@@ -21,6 +21,6 @@
 # IN THE SOFTWARE.
 #++
 
-module Zerg
-  VERSION = "0.0.4"
+module ZergrushVagrant
+  VERSION = "0.0.1"
 end
