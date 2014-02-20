@@ -97,16 +97,10 @@ Zerg task files are json files that are loaded by zerg, validated, and then tran
     - host_path - path to folder on the host
     - guest_path - path to folder on the guest that host_path will map to
     - options - array of options corresponding to [Vagrant sync folder options]
-- tasks - array of tasks
-    - type - Type of task payload. 'shell', 'chef_client' or 'chef_solo'
-    - shell task parameters: 
-        - [shell provisioner]
-    - chef_client and chef_solo task parameters map directly to Vagrant provisioner docs, **EXCEPT the node_name parameter**:
-        - [chef_solo provisioner]
-        - [chef_client provisioner]
-        - [chef common options]
+- tasks - array of tasks. Task definitions vary by driver type. For example: [Vagrant driver schema](zerg_plugins/zergrush_vagrant/resources/tasks_schema.template)
+    - [Tasks array details](zerg_plugins/zergrush_vagrant)
 - vm - description of all VM instances.
-    - driver - properties of a hypervisor 'driver'. Currenlty only [Vagrant] is supported
+    - driver - properties of a hypervisor 'driver'. Currently only [Vagrant] is supported
         - drivertype - Type of the 'driver' Only 'vagrant' is currently supported.
         - providertype - Hypervisor provider. 'virtualbox', 'aws', 'libvirt'
         - provider_options - provider options. Array of strings - each one is a vagrantfile string documented at [Vagrant docs], [vagrant-aws docs] and [vagrant-libvirt docs].
@@ -239,10 +233,6 @@ Not a problem locally, but would be **BAD** for a REST API
 [Chef Solo]:http://docs.opscode.com/chef_solo.html
 [Ruby]:https://www.ruby-lang.org
 [schema]:http://json-schema.org
-[chef_solo provisioner]:http://docs.vagrantup.com/v2/provisioning/chef_solo.html
-[chef_client provisioner]:https://docs.vagrantup.com/v2/provisioning/chef_client.html
-[chef common options]:http://docs.vagrantup.com/v2/provisioning/chef_common.html
-[shell provisioner]:http://docs.vagrantup.com/v2/provisioning/shell.html
 [AwesomePrint gem]:https://github.com/michaeldv/awesome_print
 [JSON Schema gem]:https://github.com/hoxworth/json-schema
 [Thor gem]:https://github.com/erikhuda/thor

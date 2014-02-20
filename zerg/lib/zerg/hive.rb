@@ -27,6 +27,7 @@ require 'json-schema'
 require 'fileutils'
 require 'singleton'
 require 'highline/import'
+require_relative 'erbalize'
 
 module Zerg
     class Hive
@@ -89,7 +90,19 @@ module Zerg
                     ke_file_hash = JSON.parse( IO.read(ke_file) )
 
                     # verify against schema.
-                    errors = JSON::Validator.fully_validate(File.join("#{File.dirname(__FILE__)}", "../../data/ke.schema"), ke_file_hash, :errors_as_objects => true)
+                    # first get the tasks schema piece from the driver
+                    pmgr = ZergGemPlugin::Manager.instance
+                    pmgr.load
+                    driver = pmgr.create("/driver/#{ke_file_hash["vm"]["driver"]["drivertype"]}")
+                    driver_schema = driver.task_schema
+
+                    schema_template = File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "data", "ke.schema"), 'r').read
+                    sources = {
+                        :driver_tasks_schema => driver_schema
+                    }
+                    full_schema = Erbalize.erbalize_hash(schema_template, sources)
+
+                    errors = JSON::Validator.fully_validate(full_schema, ke_file_hash, :errors_as_objects => true)
                     unless errors.empty?
                         abort("ERROR: #{ke_file} failed validation. Errors: #{errors.ai}")
                     end

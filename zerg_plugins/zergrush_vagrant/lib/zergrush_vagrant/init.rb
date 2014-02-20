@@ -1,3 +1,26 @@
+#--
+
+# Copyright 2014 by MTN Sattelite Communications
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to
+# deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+# sell copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+# IN THE SOFTWARE.
+#++
+
 require 'zerg'
 require_relative 'renderer'
 
@@ -17,7 +40,7 @@ class Vagrant < ZergGemPlugin::Plugin "/driver"
 
         # bring up all of the VMs first.
         puts("Starting vagrant in #{File.join("#{hive_location}", "driver", task_hash["vm"]["driver"]["drivertype"], task_name)}")
-        for index in 0..instances - 1
+        for index in 0..task_hash["instances"] - 1
             create_pid = Process.spawn(
                 {
                     "VAGRANT_CWD" => File.join("#{hive_location}", "driver", task_hash["vm"]["driver"]["drivertype"], task_name),
@@ -37,7 +60,7 @@ class Vagrant < ZergGemPlugin::Plugin "/driver"
         # and provision them all at once (sort of)
         provisioners = Array.new
         provision_pid = nil
-        for index in 0..instances - 1
+        for index in 0..task_hash["instances"] - 1
             provision_pid = Process.spawn(
                 {
                     "VAGRANT_CWD" => File.join("#{hive_location}", "driver", task_hash["vm"]["driver"]["drivertype"], task_name),
@@ -114,16 +137,20 @@ class Vagrant < ZergGemPlugin::Plugin "/driver"
 
         # halt all machines
         halt_pid = nil
-        for index in 0..instances - 1
+        for index in 0..task_hash["instances"] - 1
             halt_pid = Process.spawn(
                 {
-                    "VAGRANT_CWD" => File.join("#{hive_location}", "driver", task_hash["vm"]["driver"]["drivertype"], task_name)
+                    "VAGRANT_CWD" => File.join("#{hive_location}", "driver", task_hash["vm"]["driver"]["drivertype"], task_name),
                     "VAGRANT_DEFAULT_PROVIDER" => task_hash["vm"]["driver"]["providertype"]
                 },
                 "vagrant halt zergling_#{index}#{debug_string}")
             Process.wait(halt_pid)
             abort("ERROR: vagrant halt failed on machine zergling_#{index}!") unless $?.exitstatus == 0
         end
+    end
+
+    def task_schema
+        return File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "resources", "tasks_schema.template"), 'r').read
     end
 
     def which(cmd)

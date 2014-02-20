@@ -23,20 +23,10 @@
 
 require 'awesome_print'
 require 'fileutils'
-require 'erb'
-require 'ostruct'
 require 'securerandom'
+require_relative 'erbalize'
 
 class Renderer
-    class Erbalize < OpenStruct
-        def self.erbalize_hash(template, sources)
-            Erbalize.new(sources).render(template)
-        end
-
-        def render(template)
-            ERB.new(template, nil, '-').result(binding)
-        end
-    end
 
     # generate a virtualbox - compatible MAC address
     def generateMACAddress()
@@ -134,7 +124,7 @@ class Renderer
                 hostonly_section = Erbalize.erbalize_hash(hostonly_template, sources)
             end
 
-            # blah
+            # synced folders
             folder_definitions = nil
             if @synced_folders != nil
                 folder_definitions = ""

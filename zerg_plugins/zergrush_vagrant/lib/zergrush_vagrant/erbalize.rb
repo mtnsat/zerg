@@ -21,9 +21,15 @@
 # IN THE SOFTWARE.
 #++
 
-require "zerg/hive"
-require "zerg/runner"
-require "zerg/gem_plugin"
-module Zerg
-  
+require 'erb'
+require 'ostruct'
+
+class Erbalize < OpenStruct
+    def self.erbalize_hash(template, sources)
+        Erbalize.new(sources).render(template)
+    end
+
+    def render(template)
+        ERB.new(template, nil, '-').result(binding)
+    end
 end
