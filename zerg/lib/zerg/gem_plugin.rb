@@ -166,8 +166,6 @@ module ZergGemPlugin
                 next if @gems.has_key? gem.name        
                 check = needs.dup
 
-                puts gem.ai
-
                 # rolls through the depends and inverts anything it finds
                 gem.dependencies.each do |dep|
                     # this will fail if a gem is depended more than once
