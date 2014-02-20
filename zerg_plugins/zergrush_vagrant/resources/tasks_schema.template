@@ -1,152 +1,115 @@
 "properties": {
           "type": {
             "type": "string",
-            "pattern": "^(shell|chef_client|chef_solo)$",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.type"
+            "pattern": "^(shell|chef_client|chef_solo)$"
           },
           "inline": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.inline"
+            "type": "string"
           },
           "path": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.path"
+            "type": "string"
           },
           "parameters": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.parameters"
+            "type": "string"
           },
           "environment": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.environment"
+            "type": "string"
           },
           "upload_path": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.upload_path"
+            "type": "string"
           },
           "recipe_url": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.recipe_url"
+            "type": "string"
           },
           "client_key_path": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.client_key_path"
+            "type": "string"
           },
           "validation_client_name": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.validation_client_name"
+            "type": "string"
           },
           "arguments": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.arguments"
+            "type": "string"
           },
           "chef_server_url": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.chef_server_url"
+            "type": "string"
           },
           "validation_key_path": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.validation_key_path"
+            "type": "string"
           },
           "encrypted_data_bag_secret_key_path": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.encrypted_data_bag_secret_key_path"
+            "type": "string"
           },
           "binary_path": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.binary_path"
+            "type": "string"
           },
           "custom_config_path": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.custom_config_path"
+            "type": "string"
           },
           "formatter": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.formatter"
+            "type": "string"
           },
           "http_proxy": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.http_proxy"
+            "type": "string"
           },
           "http_proxy_user": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.http_proxy_user"
+            "type": "string"
           },
           "http_proxy_pass": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.http_proxy_pass"
+            "type": "string"
           },
           "no_proxy": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.no_proxy"
+            "type": "string"
           },
           "https_proxy": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.https_proxy"
+            "type": "string"
           },
           "https_proxy_user": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.https_proxy_user"
+            "type": "string"
           },
           "https_proxy_pass": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.https_proxy_pass"
+            "type": "string"
           },
           "log_level": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.log_level"
+            "type": "string"
           },
           "provisioning_path": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.provisioning_path"
+            "type": "string"
           },
           "file_cache_path": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.file_cache_path"
+            "type": "string"
           },
           "file_backup_path": {
-            "type": "string",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.file_backup_path"
+            "type": "string"
           },
           "verbose_logging": {
-            "type": "boolean",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.verbose_logging"
+            "type": "boolean"
           },
           "delete_node": {
-            "type": "boolean",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.delete_node"
+            "type": "boolean"
           },
           "delete_client": {
-            "type": "boolean",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.delete_client"
+            "type": "boolean"
           },
           "nfs": {
-            "type": "boolean",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.nfs"
+            "type": "boolean"
           },
           "binary": {
-            "type": "boolean",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.binary"
+            "type": "boolean"
           },
           "keep_color": {
-            "type": "boolean",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.keep_color"
+            "type": "boolean"
           },
           "priveleged": {
-            "type": "boolean",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.priveleged"
+            "type": "boolean"
           },
           "attempts": {
-            "type": "integer",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.attempts"
+            "type": "integer"
           },
           "json": {
-            "type": "object",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.json"
+            "type": "object"
           },
           "cookbooks_path": {
             "type": "array",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.cookbooks_path",
             "minItems": 1,
             "items": [
               {
@@ -156,7 +119,6 @@
           },
           "args": {
             "type": "array",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.args",
             "minItems": 1,
             "items": [
               {
@@ -166,7 +128,6 @@
           },
           "roles_path": {
             "type": "array",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.roles_path",
             "minItems": 1,
             "items": [
               {
@@ -176,7 +137,6 @@
           },
           "data_bags_path": {
             "type": "array",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.data_bags_path",
             "minItems": 1,
             "items": [
               {
@@ -186,7 +146,6 @@
           },
           "environments_path": {
             "type": "array",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.environments_path",
             "minItems": 1,
             "items": [
               {
@@ -196,7 +155,6 @@
           },
           "run_list": {
             "type": "array",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.recipes",
             "minItems": 1,
             "items": [
               {
@@ -206,7 +164,6 @@
           },
           "roles": {
             "type": "array",
-            "id": "com.mtnsat.zerg.json.ke.tasks.item.roles",
             "minItems": 1,
             "items": [
               {
