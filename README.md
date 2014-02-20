@@ -205,6 +205,11 @@ cd zerg
 bundle exec cucumber features/
 ```
 
+TODO
+--------------
+
+- Plugin documentation
+
 Known issues
 --------------
 
