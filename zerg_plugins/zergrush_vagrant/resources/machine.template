@@ -3,6 +3,7 @@
     <%= bridge_specifics -%>
     <%= hostonly_specifics %>
 <%= sync_folders_array -%>
+<%= ports_array -%>
 
         # provisioning
         tasks = JSON.parse(<%= tasks_array %>)

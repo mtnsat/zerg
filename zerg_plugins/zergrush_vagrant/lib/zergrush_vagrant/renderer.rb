@@ -42,6 +42,7 @@ class Renderer
         @instances = task_hash["instances"]
         @tasks = task_hash["tasks"]
         @synced_folders = task_hash["synced_folders"]
+        @forwarded_ports = task_hash["forwarded_ports"]
         @hive_location = hive_location
     end
 
@@ -148,12 +149,41 @@ class Renderer
                 }
             end
 
+            # forwarded port definitions.
+            port_definitions = nil
+            if @forwarded_ports != nil
+                port_definitions = ""
+                @forwarded_ports.each { |port| 
+
+                    port_definition = "zergling_#{index}.vm.network \"forwarded_port\", guest: #{port["guest_port"]}, host: #{port["host_port"]}"
+
+                    if (port.has_key?("guest_ip"))
+                        port_definition += ", guest_ip: '#{port["guest_ip"]}'"
+                    end
+
+                    if (port.has_key?("host_ip"))
+                        port_definition += ", host_ip: '#{port["host_ip"]}'"
+                    end
+
+                    if (port.has_key?("protocol"))
+                        port_definition += ", protocol: '#{port["protocol"]}'"
+                    end
+
+                    if (port.has_key?("autocorrect"))
+                        port_definition += ", autocorrect: #{port["autocorrect"]}"
+                    end
+
+                    port_definitions += "\t\t#{port_definition}\n"
+                }
+            end
+
             sources = {
                 :machine_name => "zergling_#{index}",
                 :bridge_specifics => bridge_section,
                 :hostonly_specifics => hostonly_section,
                 :tasks_array => tasks_array,
-                :sync_folders_array => folder_definitions 
+                :sync_folders_array => folder_definitions,
+                :ports_array => port_definitions  
             }.delete_if { |k, v| v.nil? }
 
             machine_section = Erbalize.erbalize_hash(machine_template, sources)

@@ -30,6 +30,36 @@
         "additionalProperties": false
       }
     },
+    "forwarded_ports": {
+      "type": "array",
+      "items": {
+        "properties": {
+          "guest_port": {
+            "type": "integer"
+          },
+          "host_port": {
+            "type": "integer"
+          },
+          "guest_ip": {
+            "type": "string"
+          },
+          "host_ip": {
+            "type": "string"
+          },
+          "protocol": {
+            "type": "string"
+          },
+          "autocorrect": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+            "guest_port",
+            "host_port"
+        ],
+        "additionalProperties": false
+      }
+    },
     "tasks": {
       "type": "array",
       "minItems": 1,
