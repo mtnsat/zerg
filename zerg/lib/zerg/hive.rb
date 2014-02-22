@@ -95,11 +95,13 @@ module Zerg
                     pmgr.load
                     abort("ERROR: 'drivertype' is missing from #{ke_file}") unless ke_file_hash["vm"]["driver"]["drivertype"] != nil
                     driver = pmgr.create("/driver/#{ke_file_hash["vm"]["driver"]["drivertype"]}")
-                    driver_schema = driver.task_schema
+                    driver_task_schema = driver.task_schema
+                    driver_option_schema = driver.option_schema
 
                     schema_template = File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "data", "ke.schema"), 'r').read
                     sources = {
-                        :driver_tasks_schema => driver_schema
+                        :driver_tasks_schema => driver_task_schema,
+                        :driver_options_schema => driver_option_schema
                     }
                     full_schema = JSON.parse(Erbalize.erbalize_hash(schema_template, sources))
 

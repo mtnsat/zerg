@@ -1,5 +1,4 @@
-"properties": {
-          "type": {
+"type": {
             "type": "string",
             "pattern": "^(shell|chef_client|chef_solo)$"
           },
@@ -171,4 +170,3 @@
               }
             ]
           }
-        }

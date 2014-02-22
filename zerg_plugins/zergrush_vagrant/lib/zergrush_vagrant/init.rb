@@ -153,6 +153,10 @@ class Vagrant < ZergGemPlugin::Plugin "/driver"
         return File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "resources", "tasks_schema.template"), 'r').read
     end
 
+    def option_schema
+        return File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "resources", "option_schema.template"), 'r').read
+    end
+
     def which(cmd)
         exts = ENV['PATHEXT'] ? ENV['PATHEXT'].split(';') : ['']
         ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
