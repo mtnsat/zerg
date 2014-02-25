@@ -1,172 +1,174 @@
-"type": {
-            "type": "string",
-            "pattern": "^(shell|chef_client|chef_solo)$"
-          },
-          "inline": {
-            "type": "string"
-          },
-          "path": {
-            "type": "string"
-          },
-          "parameters": {
-            "type": "string"
-          },
-          "environment": {
-            "type": "string"
-          },
-          "upload_path": {
-            "type": "string"
-          },
-          "recipe_url": {
-            "type": "string"
-          },
-          "client_key_path": {
-            "type": "string"
-          },
-          "validation_client_name": {
-            "type": "string"
-          },
-          "arguments": {
-            "type": "string"
-          },
-          "chef_server_url": {
-            "type": "string"
-          },
-          "validation_key_path": {
-            "type": "string"
-          },
-          "encrypted_data_bag_secret_key_path": {
-            "type": "string"
-          },
-          "binary_path": {
-            "type": "string"
-          },
-          "custom_config_path": {
-            "type": "string"
-          },
-          "formatter": {
-            "type": "string"
-          },
-          "http_proxy": {
-            "type": "string"
-          },
-          "http_proxy_user": {
-            "type": "string"
-          },
-          "http_proxy_pass": {
-            "type": "string"
-          },
-          "no_proxy": {
-            "type": "string"
-          },
-          "https_proxy": {
-            "type": "string"
-          },
-          "https_proxy_user": {
-            "type": "string"
-          },
-          "https_proxy_pass": {
-            "type": "string"
-          },
-          "log_level": {
-            "type": "string"
-          },
-          "provisioning_path": {
-            "type": "string"
-          },
-          "file_cache_path": {
-            "type": "string"
-          },
-          "file_backup_path": {
-            "type": "string"
-          },
-          "verbose_logging": {
-            "type": "boolean"
-          },
-          "delete_node": {
-            "type": "boolean"
-          },
-          "delete_client": {
-            "type": "boolean"
-          },
-          "nfs": {
-            "type": "boolean"
-          },
-          "binary": {
-            "type": "boolean"
-          },
-          "keep_color": {
-            "type": "boolean"
-          },
-          "priveleged": {
-            "type": "boolean"
-          },
-          "attempts": {
-            "type": "integer"
-          },
-          "json": {
-            "type": "object"
-          },
-          "cookbooks_path": {
-            "type": "array",
-            "minItems": 1,
-            "items": [
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "args": {
-            "type": "array",
-            "minItems": 1,
-            "items": [
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "roles_path": {
-            "type": "array",
-            "minItems": 1,
-            "items": [
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "data_bags_path": {
-            "type": "array",
-            "minItems": 1,
-            "items": [
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "environments_path": {
-            "type": "array",
-            "minItems": 1,
-            "items": [
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "run_list": {
-            "type": "array",
-            "minItems": 1,
-            "items": [
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "roles": {
-            "type": "array",
-            "minItems": 1,
-            "items": [
-              {
-                "type": "string"
-              }
-            ]
-          }
+{
+  "type": {
+    "type": "string",
+    "pattern": "^(shell|chef_client|chef_solo)$"
+  },
+  "inline": {
+    "type": "string"
+  },
+  "path": {
+    "type": "string"
+  },
+  "parameters": {
+    "type": "string"
+  },
+  "environment": {
+    "type": "string"
+  },
+  "upload_path": {
+    "type": "string"
+  },
+  "recipe_url": {
+    "type": "string"
+  },
+  "client_key_path": {
+    "type": "string"
+  },
+  "validation_client_name": {
+    "type": "string"
+  },
+  "arguments": {
+    "type": "string"
+  },
+  "chef_server_url": {
+    "type": "string"
+  },
+  "validation_key_path": {
+    "type": "string"
+  },
+  "encrypted_data_bag_secret_key_path": {
+    "type": "string"
+  },
+  "binary_path": {
+    "type": "string"
+  },
+  "custom_config_path": {
+    "type": "string"
+  },
+  "formatter": {
+    "type": "string"
+  },
+  "http_proxy": {
+    "type": "string"
+  },
+  "http_proxy_user": {
+    "type": "string"
+  },
+  "http_proxy_pass": {
+    "type": "string"
+  },
+  "no_proxy": {
+    "type": "string"
+  },
+  "https_proxy": {
+    "type": "string"
+  },
+  "https_proxy_user": {
+    "type": "string"
+  },
+  "https_proxy_pass": {
+    "type": "string"
+  },
+  "log_level": {
+    "type": "string"
+  },
+  "provisioning_path": {
+    "type": "string"
+  },
+  "file_cache_path": {
+    "type": "string"
+  },
+  "file_backup_path": {
+    "type": "string"
+  },
+  "verbose_logging": {
+    "type": "boolean"
+  },
+  "delete_node": {
+    "type": "boolean"
+  },
+  "delete_client": {
+    "type": "boolean"
+  },
+  "nfs": {
+    "type": "boolean"
+  },
+  "binary": {
+    "type": "boolean"
+  },
+  "keep_color": {
+    "type": "boolean"
+  },
+  "priveleged": {
+    "type": "boolean"
+  },
+  "attempts": {
+    "type": "integer"
+  },
+  "json": {
+    "type": "object"
+  },
+  "cookbooks_path": {
+    "type": "array",
+    "minItems": 1,
+    "items": [
+      {
+        "type": "string"
+      }
+    ]
+  },
+  "args": {
+    "type": "array",
+    "minItems": 1,
+    "items": [
+      {
+        "type": "string"
+      }
+    ]
+  },
+  "roles_path": {
+    "type": "array",
+    "minItems": 1,
+    "items": [
+      {
+        "type": "string"
+      }
+    ]
+  },
+  "data_bags_path": {
+    "type": "array",
+    "minItems": 1,
+    "items": [
+      {
+        "type": "string"
+      }
+    ]
+  },
+  "environments_path": {
+    "type": "array",
+    "minItems": 1,
+    "items": [
+      {
+        "type": "string"
+      }
+    ]
+  },
+  "run_list": {
+    "type": "array",
+    "minItems": 1,
+    "items": [
+      {
+        "type": "string"
+      }
+    ]
+  },
+  "roles": {
+    "type": "array",
+    "minItems": 1,
+    "items": [
+      {
+        "type": "string"
+      }
+    ]
+  }
+}

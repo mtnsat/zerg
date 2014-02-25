@@ -1,12 +1,11 @@
-"providertype": {
-            "type": "string"
-          },
-          "provider_options": {
-            "type": "array"
-          },
-          "network": {
-            "type": "object"
-          },
-          "ssh": {
-            "type": "object"
-          }
+{
+  "providertype": {
+    "type": "string"
+  },
+  "provider_options": {
+    "type": "object"
+  },
+  "raw_options": {
+    "type": "array"
+  }
+}

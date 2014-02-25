@@ -38,13 +38,20 @@ class Vagrant < ZergGemPlugin::Plugin "/driver"
 
         debug_string = (debug == true) ? " --debug" : ""                
 
+        # last explicitly defined driver option set
+        last_defined_driveroption = nil
+
         # bring up all of the VMs first.
         puts("Starting vagrant in #{File.join("#{hive_location}", "driver", task_hash["vm"]["driver"]["drivertype"], task_name)}")
-        for index in 0..task_hash["instances"] - 1
+        for index in 0..task_hash["num_instances"] - 1
+
+            # grab last defined driver options set, or keep the current one
+            last_defined_driveroption = (task_hash["vm"]["driver"]["driveroptions"][index] == nil) ? last_defined_driveroption : task_hash["vm"]["driver"]["driveroptions"][index]
+
             create_pid = Process.spawn(
                 {
                     "VAGRANT_CWD" => File.join("#{hive_location}", "driver", task_hash["vm"]["driver"]["drivertype"], task_name),
-                    "VAGRANT_DEFAULT_PROVIDER" => task_hash["vm"]["driver"]["providertype"]
+                    "VAGRANT_DEFAULT_PROVIDER" => last_defined_driveroption["providertype"]
                 },
                 "vagrant up zergling_#{index} --no-provision#{debug_string}")
             Process.wait(create_pid)
@@ -56,15 +63,19 @@ class Vagrant < ZergGemPlugin::Plugin "/driver"
             end
         end
 
+        last_defined_driveroption = nil
         puts("Running tasks in vagrant virtual machines...")
         # and provision them all at once (sort of)
         provisioners = Array.new
         provision_pid = nil
-        for index in 0..task_hash["instances"] - 1
+        for index in 0..task_hash["num_instances"] - 1
+            # grab last defined driver options set, or keep the current one
+            last_defined_driveroption = (task_hash["vm"]["driver"]["driveroptions"][index] == nil) ? last_defined_driveroption : task_hash["vm"]["driver"]["driveroptions"][index]
+
             provision_pid = Process.spawn(
                 {
                     "VAGRANT_CWD" => File.join("#{hive_location}", "driver", task_hash["vm"]["driver"]["drivertype"], task_name),
-                    "VAGRANT_DEFAULT_PROVIDER" => task_hash["vm"]["driver"]["providertype"]
+                    "VAGRANT_DEFAULT_PROVIDER" => last_defined_driveroption["providertype"]
                 },
                 "vagrant provision zergling_#{index}#{debug_string}")
             provisioners.push({:name => "zergling_#{index}", :pid => provision_pid})
@@ -82,13 +93,31 @@ class Vagrant < ZergGemPlugin::Plugin "/driver"
             }.join 
         }
 
-        if task_hash["vm"]["keepalive"] == false
-            halt(hive_location, task_name, task_hash, debug)
-        else
-            puts "Will leave instances running."
-        end
+        # halt only the machines that are not marked as "keepalive"
+        last_defined_driveroption = nil
+        halt_pid = nil
+        keepalive_left = false
+        for index in 0..task_hash["num_instances"] - 1
 
+            # grab last defined driver options set, or keep the current one
+            last_defined_driveroption = (task_hash["vm"]["driver"]["driveroptions"][index] == nil) ? last_defined_driveroption : task_hash["vm"]["driver"]["driveroptions"][index]
+            
+            if task_hash["vm"]["instances"][index]["keepalive"] != true
+                halt_pid = Process.spawn(
+                    {
+                        "VAGRANT_CWD" => File.join("#{hive_location}", "driver", task_hash["vm"]["driver"]["drivertype"], task_name),
+                        "VAGRANT_DEFAULT_PROVIDER" => last_defined_driveroption["providertype"]
+                    },
+                    "vagrant halt zergling_#{index}#{debug_string}")
+                Process.wait(halt_pid)
+                abort("ERROR: vagrant halt failed on machine zergling_#{index}!") unless $?.exitstatus == 0
+            else
+                keepalive_left = true
+                puts "zergling_#{index} is marked as keepalive, skipping halt..."
+            end
+        end
         abort("ERROR: Finished with errors in: #{errors.to_s}") unless errors.length == 0
+        puts "Some instances were left running." unless keepalive_left == false
     end
 
     def clean hive_location, task_name, task_hash, debug
@@ -104,23 +133,43 @@ class Vagrant < ZergGemPlugin::Plugin "/driver"
         # run vagrant cleanup
         debug_string = (debug == true) ? " --debug" : ""
         
-        for index in 0..task_hash["instances"] - 1
+        last_defined_driveroption = nil
+
+        for index in 0..task_hash["num_instances"] - 1
+
+            # grab last defined driver options set, or keep the current one
+            last_defined_driveroption = (task_hash["vm"]["driver"]["driveroptions"][index] == nil) ? last_defined_driveroption : task_hash["vm"]["driver"]["driveroptions"][index]
+
             cleanup_pid = Process.spawn(
                 {
                     "VAGRANT_CWD" => File.join("#{hive_location}", "driver", task_hash["vm"]["driver"]["drivertype"], task_name),
-                    "VAGRANT_DEFAULT_PROVIDER" => task_hash["vm"]["driver"]["providertype"]
+                    "VAGRANT_DEFAULT_PROVIDER" => last_defined_driveroption["providertype"]
                 },
                 "vagrant destroy zergling_#{index} --force#{debug_string}")
             Process.wait(cleanup_pid)
             abort("ERROR: vagrant failed!") unless $?.exitstatus == 0
         end
 
-        cleanup_pid = Process.spawn(
-            {
-                "VAGRANT_CWD" => File.join("#{hive_location}", "driver", task_hash["vm"]["driver"]["drivertype"], task_name)
-            },
-            "vagrant box remove zergling_#{task_name}_#{task_hash["vm"]["driver"]["providertype"]}#{debug_string} #{task_hash["vm"]["driver"]["providertype"]}")
-        Process.wait(cleanup_pid)
+        last_defined_driveroption = nil
+        
+        # last explicitly defined vm instance. 
+        last_defined_vm = nil
+
+        for index in 0..task_hash["num_instances"] - 1
+            # grab last defined driver options set, or keep the current one
+            last_defined_driveroption = (task_hash["vm"]["driver"]["driveroptions"][index] == nil) ? last_defined_driveroption : task_hash["vm"]["driver"]["driveroptions"][index]
+
+            # grab last defined vm instance, or keep the current one
+            last_defined_vm = (task_hash["vm"]["instances"][index] == nil) ? last_defined_vm : task_hash["vm"]["instances"][index]
+            
+            boxname = Digest::SHA1.base64digest "#{task_name}#{last_defined_driveroption["providertype"]}#{last_defined_vm["basebox"]}"
+            cleanup_pid = Process.spawn(
+                {
+                    "VAGRANT_CWD" => File.join("#{hive_location}", "driver", task_hash["vm"]["driver"]["drivertype"], task_name)
+                },
+                "vagrant box remove #{boxname}#{debug_string} #{task_hash["vm"]["driver"]["providertype"]}")
+            Process.wait(cleanup_pid)
+        end
     end
 
     def halt hive_location, task_name, task_hash, debug
@@ -137,11 +186,18 @@ class Vagrant < ZergGemPlugin::Plugin "/driver"
 
         # halt all machines
         halt_pid = nil
-        for index in 0..task_hash["instances"] - 1
+
+        last_defined_driveroption = nil
+
+        for index in 0..task_hash["num_instances"] - 1
+
+            # grab last defined driver options set, or keep the current one
+            last_defined_driveroption = (task_hash["vm"]["driver"]["driveroptions"][index] == nil) ? last_defined_driveroption : task_hash["vm"]["driver"]["driveroptions"][index]
+            
             halt_pid = Process.spawn(
                 {
                     "VAGRANT_CWD" => File.join("#{hive_location}", "driver", task_hash["vm"]["driver"]["drivertype"], task_name),
-                    "VAGRANT_DEFAULT_PROVIDER" => task_hash["vm"]["driver"]["providertype"]
+                    "VAGRANT_DEFAULT_PROVIDER" => last_defined_driveroption["providertype"]
                 },
                 "vagrant halt zergling_#{index}#{debug_string}")
             Process.wait(halt_pid)
@@ -155,6 +211,18 @@ class Vagrant < ZergGemPlugin::Plugin "/driver"
 
     def option_schema
         return File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "resources", "option_schema.template"), 'r').read
+    end
+
+    def folder_schema
+        return File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "resources", "folders_schema.template"), 'r').read
+    end
+
+    def port_schema
+        return File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "resources", "ports_schema.template"), 'r').read
+    end
+
+    def ssh_schema
+        return File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "resources", "ssh_schema.template"), 'r').read
     end
 
     def which(cmd)

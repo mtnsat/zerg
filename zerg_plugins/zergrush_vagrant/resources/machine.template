@@ -1,9 +1,16 @@
     # define the machine name
     config.vm.define "<%= machine_name %>" do |<%= machine_name %>|
-    <%= bridge_specifics -%>
-    <%= hostonly_specifics %>
+        <%= machine_name %>.vm.box_url = "<%= basebox_path %>"
+        <%= machine_name %>.vm.box = "<%= box_name %>"
+
+        <%= machine_name %>.vm.provider :<%= provider %> do |<%= provider %>|
+            <%= provider_specifics -%>
+        end
+
+<%= networks_array -%>
 <%= sync_folders_array -%>
 <%= ports_array -%>
+<%= ssh_specifics -%>
 
         # provisioning
         tasks = JSON.parse(<%= tasks_array %>)

@@ -1,0 +1,12 @@
+"guest_ip": {
+  "type": "string"
+},
+"host_ip": {
+  "type": "string"
+},
+"protocol": {
+  "type": "string"
+},
+"autocorrect": {
+  "type": "boolean"
+}

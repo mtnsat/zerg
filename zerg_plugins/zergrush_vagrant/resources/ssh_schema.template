@@ -1,0 +1,6 @@
+"forward_x11": {
+  "type": "boolean"
+},
+"shell": {
+  "type": "string"
+}
