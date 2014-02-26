@@ -1,32 +1,44 @@
 {
-    "instances": 1,
-    "synced_folders" : [
-        {
-            "host_path": "~",
-            "guest_path": "/helloworld",
-            "options": [
-                { 
-                    "type": "nfs"
-                }
-            ]
-        }
-    ],
-    "tasks": [
-        {
-            "type": "shell",
-            "inline": "cd /helloworld; mkdir -p helloworld_result; touch helloworld_result/zerg_was_here.result; echo \"DONE!\""
-        }        
-    ],
+    "num_instances": 1,
     "vm": {
         "driver": {
             "drivertype": "vagrant",
-            "providertype": "virtualbox",
-            "provider_options": [
-                "virtualbox.gui = false",
-                "virtualbox.memory = 256"
+            "driveroptions": [
+                {
+                    "providertype": "virtualbox",
+                    "provider_options" : {
+                        "gui": false,
+                        "memory": 256
+                    }
+                }
             ]
         },
-        "basebox": "http://files.vagrantup.com/precise32.box",
-        "private_network": true
+        "private_ip_range": "192.168.50.0/24",
+        "instances": [
+            {
+                "basebox": "http://files.vagrantup.com/precise32.box",
+                "keepalive": false,
+                "tasks": [
+                    {
+                        "type": "shell",
+                        "inline": "cd /helloworld; mkdir -p helloworld_result; touch helloworld_result/zerg_was_here.result; echo \"DONE!\""
+                    }        
+                ],
+                "synced_folders" : [
+                    {
+                        "host_path": "~",
+                        "guest_path": "/helloworld",
+                        "additional": {
+                            "type": "nfs"
+                        }
+                    }
+                ],
+                "networks": [
+                    {
+                        "type": "private_network"
+                    }       
+                ]
+            }
+        ]
     }
 }

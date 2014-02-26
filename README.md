@@ -80,7 +80,7 @@ Note that prior to trying the helloaws task you will need to set some environmen
 - AWS_PRIVATE_KEY_PATH - path to the private key .pem
 - AWS_SECURITY_GROUP - name of an AWS security group to use
 
-You will then be bale to run the task with:
+You will then be able to run the task with:
 
 ```
 zerg rush helloaws
@@ -92,7 +92,7 @@ Zerg task files are json files that are loaded by zerg, validated, and then tran
 
 [Task JSON schema](zerg/data/ke.schema)
 
-- instances - number of virtual machines that'll be started
+- num_instances - number of virtual machines that'll be started
 - synced_folders - array of folders to sync 
     - host_path - path to folder on the host
     - guest_path - path to folder on the guest that host_path will map to
@@ -100,83 +100,140 @@ Zerg task files are json files that are loaded by zerg, validated, and then tran
 - tasks - array of tasks. Task definitions vary by driver type. For example: [Vagrant driver schema](zerg_plugins/zergrush_vagrant/resources/tasks_schema.template)
     - [Tasks array details](zerg_plugins/zergrush_vagrant)
 - vm - description of all VM instances.
+    - private_ip_range - IP address range in [CIDR notation](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) used for all private ip addresses, unless said address is explicitly specified by another option. First host ip in range is always the host machine. 
     - driver - properties of a hypervisor 'driver'. Currently only [Vagrant] is supported
         - drivertype - Type of the 'driver' Only 'vagrant' is currently supported.
-        - providertype - Hypervisor provider. 'virtualbox', 'aws', 'libvirt'
-        - provider_options - provider options. Array of strings - each one is a vagrantfile string documented at [Vagrant docs], [vagrant-aws docs] and [vagrant-libvirt docs].
-    - basebox - Path to the vagrant base box. File path or URL
-    - private_network - setup a host-only network between host and VM. True or false. Only valid for 'virtualbox' and 'libvirt' providertype.
-    - bridge_description - specifies which host adapter to bridge. Should be a full description string of the host NIC, as seen by VirtualBox. Only valid for 'virtualbox' and 'libvirt' providertype.
-    - keepalive - if se to tru, VMs will be left running after all tasks are finished. 'zerg halt <task>' to stop.
+        - driveroptions - options for the driver, defined by [driver plugin](zerg_plugins/zergrush_vagrant)  
+    - instances - array of detailed descriptions of each/some of the vm instances. Last definition in the array is applied to the rest of remaining instances. For example: if num_instances is 3 and there are 2 items in instances array, then first VM will correspond to the first item, and the other two VMs will correspond to the second. 
+        - basebox - basebox file location or URL
+        - keepalive - keep this instance around after all tasks are finished
+        - tasks - array of tasks to run. Task properties are defined by [driver plugin](zerg_plugins/zergrush_vagrant)
+        - synced_folders - array of synchronized folders
+            - host_path - path on host
+            - guest_path - corresponding path on guest
+            - additional - addtional properties defined by [driver plugin](zerg_plugins/zergrush_vagrant) 
+        - forwarded_ports - array of port forwarding descriptions
+            - guest_port port on guest to be forwarded
+            - host_port - port on host to be forwarded to
+            - additional - addtional properties defined by [driver plugin](zerg_plugins/zergrush_vagrant) 
+        - networks - array of networks to be setup - NAT/bridging/etc. Network options are defined by [driver plugin](zerg_plugins/zergrush_vagrant)
+        - ssh - SSH options 
+            - username - ssh username
+            - host - ssh host, normally autodetected 
+            - port - host ssh port
+            - guest_port - guest ssh port
+            - private_key_path - path to the private key file
+            - forward_agent - do SSH agent forwarding
+            - additional - addtional properties defined by [driver plugin](zerg_plugins/zergrush_vagrant) 
 
 Example task
 --------------
 
-Below example task uses all four types of provisioners on an AWS instance:
+Below example task that:
+- will start 5 virtual machines using vagrant
+- first machine will be backed by VirtualBox
+- other machines will be backed by AWS
+- first machine will run some shell commands and will have a private network and a public network, bridged over host's AirPort adapter. It will also stay up after all other tasks are doen running
+- second machine will have git installed on it with chef client
+- all other machines will run 'starter' cookbook through chef solo
 
 ```
 {
-    "instances": 5,
-    "tasks": [
-        {
-            "type": "inline",
-            "payload": "echo \"ZERG RUSH PRIME!\""
-        },
-        {
-            "type": "shell",
-            "payload": "/bin/echo",
-            "parameters": "hello bin echo"
-        },
-        {
-            "type": "chef_client",
-            "chef_server_url": "http://mychefserver.com:4000/",
-            "validation_key_path": "validation.pem",
-            "environment": "default",
-            "client_key_path": "client.pem",
-            "node_name": "trollolo",
-            "validation_client_name": "ladadadadeeeee",
-            "delete_node": true,
-            "delete_client": true,
-            "recipes": ["ark", "rvm", "packer"],
-            "roles": ["tester", "web", "seanet"]
-        },
-        {
-            "type": "chef_client",
-            "cookbooks_path": ["~/cookbooks", "~/Downloads/cookbooks"],
-            "data_bags_path": ["~/databags", "~/Downloads/databags"],
-            "environments_path": ["~/environs", "~/Downloads/environs"],
-            "roles_path": ["~/roles", "~/Downloads/roles"],
-            "encrypted_data_bag_secret_key_path": "encrypted_data_bag_secret_key_path.pem",
-            "environment": "default",
-            "nfs": false,
-            "recipe_url": "http://www.cookbooks.com/cookbooks.zip",
-            "json": {
-                "apache": {
-                    "listen_address": "0.0.0.0"
-                }
-            },
-            "recipes": ["ark", "rvm", "packer"],
-            "roles": ["tester", "web", "seanet"]
-        }                    
-    ],
+    "num_instances": 5,
     "vm": {
         "driver": {
             "drivertype": "vagrant",
-            "providertype": "aws",
-            "provider_options": [
-                "aws.instance_type = 't1.micro'",
-                "aws.access_key_id = \"#{ENV['AWS_ACCESS_KEY_ID']}\"",
-                "aws.secret_access_key = \"#{ENV['AWS_SECRET_ACCESS_KEY']}\"",
-                "aws.keypair_name = \"#{ENV['AWS_KEY_PAIR']}\"",
-                "aws.ami = 'ami-3fec7956'",
-                "aws.region = 'us-east-1'",
-                "aws.security_groups = [ 'vagrant' ]",
-                "override.ssh.username = 'ubuntu'",
-                "override.ssh.private_key_path = \"#{ENV['AWS_PRIVATE_KEY_PATH']}\""
+            "driveroptions": [
+                {
+                    "providertype": "virtualbox",
+                    "provider_options" : {
+                        "gui": false,
+                        "memory": 256
+                    }
+                },
+                {
+                    "providertype": "aws",
+                    "provider_options" : {
+                        "instance_type": "t1.micro",
+                        "access_key_id": "YOUR_AWS_ACCESS_KEY_ID",
+                        "secret_access_key": "YOUR_AWS_SECRET",
+                        "keypair_name": "AWS_KEYPAIR_NAME",
+                        "ami": "ami-3fec7956",
+                        "region": "us-east-1",
+                        "security_groups": [ "your_security_group" ]
+                    }
+                }
             ]
         },
-        "basebox": "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box",
-        "private_network": false
+        "private_ip_range": "192.168.50.0/24",
+        "instances": [
+            {
+                "basebox": "http://files.vagrantup.com/precise32.box",
+                "keepalive": true,
+                "tasks": [
+                    {
+                        "type": "shell",
+                        "inline": "ping -c 3 192.168.50.1; echo \"ZERG RUSH FIRST!\""
+                    }        
+                ],
+                "networks": [
+                    {
+                        "type": "private_network"
+                    },
+                    {
+                        "type": "public_network",
+                        "bridge": "en1: Wi-Fi (AirPort)"
+                    }         
+                ],
+                "synced_folders": [
+                    {
+                        "host_path": "~",
+                        "guest_path": "/zerg/hosthome"
+                    }        
+                ],
+                "forwarded_ports": [
+                    {
+                        "guest_port": 8080,
+                        "host_port": 80
+                    }        
+                ],
+            },
+            {
+                "basebox": "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box",
+                "keepalive": false,
+                "tasks": [
+                    {
+                        "type": "chef_client",
+                        "chef_server_url": "CHEF_URL",
+                        "validation_key_path": "CHEF_VALIDATION_KEYPATH",
+                        "client_key_path": "CHEF_CLIENT_KEYPATH",
+                        "validation_client_name": "CHEF_VALIDATION_CLIENT_NAME",
+                        "delete_node": true,
+                        "delete_client": true,
+                        "run_list": ["recipe[git]"]
+                    }        
+                ],
+                "ssh": {
+                    "username": "ubuntu",
+                    "private_key_path": "PATH_TO_YOUR_PK"      
+                }
+            },
+            {
+                "basebox": "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box",
+                "keepalive": false,
+                "tasks": [
+                    {
+                        "type": "chef_solo",
+                        "cookbooks_path": ["~/cookbooks"],
+                        "run_list": ["recipe[starter]"]
+                    }        
+                ],
+                "ssh": {
+                    "username": "ubuntu",
+                    "private_key_path": "PATH_TO_YOUR_PK"      
+                }
+            }
+        ]
     }
 }
 ```
@@ -205,10 +262,63 @@ cd zerg
 bundle exec cucumber features/
 ```
 
-TODO
+Plugins
 --------------
 
-- Plugin documentation
+Zerg plugins are ruby gems. Each plugin gem must have an 'init.rb' file lib/__gem_name__/init.rb
+
+required in the init.rb file:
+
+```
+require 'zerg'
+
+class Vagrant < ZergGemPlugin::Plugin "/driver"
+    def rush hive_location, task_name, task_hash, debug
+        # 'zerg rush <task>' functionality.   
+    end
+
+    def clean hive_location, task_name, task_hash, debug
+        # 'zerg clean <task>' functionality.
+    end
+
+    def halt hive_location, task_name, task_hash, debug
+        # 'zerg halt <task>' functionality 
+    end
+
+    def task_schema
+        # return a chunk of JSON schema for defining task item in tasks array
+    end
+
+    def option_schema
+        # return a chunk of JSON schema for defining driver options
+    end
+
+    def folder_schema
+        # return a chunk of JSON schema for defining driver-specific sync_folder options
+    end
+
+    def port_schema
+        # return a chunk of JSON schema for defining driver-specific port forwarding options
+    end
+
+    def ssh_schema
+        # return a chunk of JSON schema for defining driver-specific ssh options
+    end
+end
+```
+
+also, in the gem's gemspec file the following metadata must be present:
+
+```
+Gem::Specification.new do |s|
+  s.name        = "your_plugin"
+ 
+ ...
+
+  # metadata that marks this as a zergrush plugin
+  s.metadata = { "zergrushplugin" => "driver" }
+end
+```
 
 Known issues
 --------------

@@ -1,28 +1,62 @@
 {
-    "instances": <%= config[:instances] %>,
-    "tasks": [
-        {
-            "type": "shell",
-            "inline": "echo \"ZERG RUSH!\""
-        }        
-    ],
+    "num_instances": 3,
     "vm": {
         "driver": {
-            "drivertype": "<%= config[:drivertype] %>",
-            "providertype": "<%= config[:providertype] %>",
-            "provider_options": [
-                "<%= config[:providertype] %>.gui = false",
-                "<%= config[:providertype] %>.memory = 256",
-                "# adjust for DNS weirdness in ubuntu 12.04",
-                "<%= config[:providertype] %>.customize ['modifyvm', :id,  '--natdnsproxy1', 'off']",
-                "<%= config[:providertype] %>.customize ['modifyvm', :id,  '--natdnshostresolver1', 'off']",
-                "# set virtio type on the NIC driver. Better performance for large traffic bursts",
-                "<%= config[:providertype] %>.customize ['modifyvm', :id,  '--nictype1', 'virtio']",
-                "<%= config[:providertype] %>.customize ['modifyvm', :id,  '--nictype2', 'virtio']",
-                "<%= config[:providertype] %>.customize ['modifyvm', :id,  '--nictype3', 'virtio']"
+            "drivertype": "vagrant",
+            "driveroptions": [
+                {
+                    "providertype": "virtualbox",
+                    "provider_options" : {
+                        "gui": false,
+                        "memory": 256
+                    }
+                }
             ]
         },
-        "basebox": "<%= config[:baseboxpath] %>",
-        "private_network": <%= config[:privatenetwork] %>
+        "private_ip_range": "192.168.50.0/24",
+        "instances": [
+            {
+                "basebox": "http://files.vagrantup.com/precise32.box",
+                "keepalive": true,
+                "tasks": [
+                    {
+                        "type": "shell",
+                        "inline": "cd /zerg/hosthome; touch helloworld.result; ping -c 3 192.168.50.1; echo \"ZERG RUSH FIRST!\""
+                    }        
+                ],
+                "synced_folders": [
+                    {
+                        "host_path": "~",
+                        "guest_path": "/zerg/hosthome"
+                    }        
+                ],
+                "forwarded_ports": [
+                    {
+                        "guest_port": 8080,
+                        "host_port": 80
+                    }        
+                ],
+                "networks": [
+                    {
+                        "type": "private_network"
+                    },
+                    {
+                        "type": "public_network",
+                        "bridge": "en1: Wi-Fi (AirPort)"
+                    }         
+                ]
+
+            },
+            {
+                "basebox": "http://files.vagrantup.com/precise32.box",
+                "keepalive": false,
+                "tasks": [
+                    {
+                        "type": "shell",
+                        "inline": "echo \"ZERG RUSH OTHERS!\""
+                    }        
+                ]
+            }
+        ]
     }
 }

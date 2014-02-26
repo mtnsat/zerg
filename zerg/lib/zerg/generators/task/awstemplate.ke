@@ -1,28 +1,39 @@
 {
-    "instances": <%= config[:instances] %>,
-    "tasks": [
-        {
-            "type": "shell",
-            "inline": "echo \"ZERG RUSH PRIME!\""
-        }        
-    ],
+    "num_instances": 3,
     "vm": {
         "driver": {
-            "drivertype": "<%= config[:drivertype] %>",
-            "providertype": "<%= config[:providertype] %>",
-            "provider_options": [
-                "<%= config[:providertype] %>.instance_type = 't1.micro'",
-                "<%= config[:providertype] %>.access_key_id = \"#{ENV['AWS_ACCESS_KEY_ID']}\"",
-                "<%= config[:providertype] %>.secret_access_key = \"#{ENV['AWS_SECRET_ACCESS_KEY']}\"",
-                "<%= config[:providertype] %>.keypair_name = \"#{ENV['AWS_KEY_PAIR']}\"",
-                "<%= config[:providertype] %>.ami = 'ami-3fec7956'",
-                "<%= config[:providertype] %>.region = 'us-east-1'",
-                "<%= config[:providertype] %>.security_groups = [ \"#{ENV['AWS_SECURITY_GROUP']}\" ]",
-                "override.ssh.username = 'ubuntu'",
-                "override.ssh.private_key_path = \"#{ENV['AWS_PRIVATE_KEY_PATH']}\""
+            "drivertype": "vagrant",
+            "driveroptions": [
+                {
+                    "providertype": "aws",
+                    "provider_options" : {
+                        "instance_type": "t1.micro",
+                        "access_key_id": "#{ENV['AWS_ACCESS_KEY_ID']}",
+                        "secret_access_key": "#{ENV['AWS_SECRET_ACCESS_KEY']}",
+                        "keypair_name": "#{ENV['AWS_KEY_PAIR']}",
+                        "ami": "ami-3fec7956",
+                        "region": "us-east-1",
+                        "security_groups": [ "#{ENV['AWS_SECURITY_GROUP']}" ]
+                    }
+                }
             ]
         },
-        "basebox": "<%= config[:baseboxpath] %>",
-        "private_network": <%= config[:privatenetwork] %>
+        "private_ip_range": "192.168.50.0/24",
+        "instances": [
+            {
+                "basebox": "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box",
+                "keepalive": false,
+                "tasks": [
+                    {
+                        "type": "shell",
+                        "inline": "echo \"ZERG RUSH PRIME!\""
+                    }        
+                ],
+                "ssh": {
+                    "username": "ubuntu",
+                    "private_key_path": "#{ENV['AWS_PRIVATE_KEY_PATH']}"      
+                }
+            }
+        ]
     }
 }

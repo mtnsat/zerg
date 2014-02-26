@@ -1,29 +1,40 @@
 {
-    "instances": 3,
-    "tasks": [
-        {
-            "type": "chef_solo",
-            "cookbooks_path": ["#{ENV['ZERG_TEST_COOKBOOKS_PATH']}"],
-            "run_list": ["recipe[starter]"]
-        }                    
-    ],
+    "num_instances": 3,
     "vm": {
         "driver": {
             "drivertype": "vagrant",
-            "providertype": "aws",
-            "provider_options": [
-                "aws.instance_type = 't1.micro'",
-                "aws.access_key_id = \"#{ENV['AWS_ACCESS_KEY_ID']}\"",
-                "aws.secret_access_key = \"#{ENV['AWS_SECRET_ACCESS_KEY']}\"",
-                "aws.keypair_name = \"#{ENV['AWS_KEY_PAIR']}\"",
-                "aws.ami = 'ami-3fec7956'",
-                "aws.region = 'us-east-1'",
-                "aws.security_groups = [ \"#{ENV['AWS_SECURITY_GROUP']}\" ]",
-                "override.ssh.username = 'ubuntu'",
-                "override.ssh.private_key_path = \"#{ENV['AWS_PRIVATE_KEY_PATH']}\""
+            "driveroptions": [
+                {
+                    "providertype": "aws",
+                    "provider_options" : {
+                        "instance_type": "t1.micro",
+                        "access_key_id": "#{ENV['AWS_ACCESS_KEY_ID']}",
+                        "secret_access_key": "#{ENV['AWS_SECRET_ACCESS_KEY']}",
+                        "keypair_name": "#{ENV['AWS_KEY_PAIR']}",
+                        "ami": "ami-3fec7956",
+                        "region": "us-east-1",
+                        "security_groups": [ "#{ENV['AWS_SECURITY_GROUP']}" ]
+                    }
+                }
             ]
         },
-        "basebox": "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box",
-        "private_network": false
+        "private_ip_range": "192.168.50.0/24",
+        "instances": [
+            {
+                "basebox": "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box",
+                "keepalive": false,
+                "tasks": [
+                    {
+                        "type": "chef_solo",
+                        "cookbooks_path": ["#{ENV['ZERG_TEST_COOKBOOKS_PATH']}"],
+                        "run_list": ["recipe[starter]"]
+                    }        
+                ],
+                "ssh": {
+                    "username": "ubuntu",
+                    "private_key_path": "#{ENV['AWS_PRIVATE_KEY_PATH']}"      
+                }
+            }
+        ]
     }
 }

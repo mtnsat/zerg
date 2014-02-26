@@ -43,25 +43,32 @@ Feature: Tasks
         Given a file named "arubatask.ke" with:
         """
         {
-            "instances": 1,
-            "tasks": [
-                {
-                    "type": "shell",
-                    "inline": "echo \"ZERG RUSH!\""
-                }        
-            ],
+            "num_instances": 1,
             "vm": {
                 "driver": {
                     "drivertype": "vagrant",
-                    "providertype": "virtualbox",
-                    "provider_options": [
-                        "virtualbox.gui = false",
-                        "virtualbox.memory = 256"
+                    "driveroptions": [
+                        {
+                            "providertype": "virtualbox",
+                            "provider_options" : {
+                                "gui": false,
+                                "memory": 256
+                            }
+                        }
                     ]
                 },
-                "keepalive": true,
-                "basebox": "http://files.vagrantup.com/precise32.box",
-                "private_network": false
+                "instances": [
+                    {
+                        "basebox": "http://files.vagrantup.com/precise32.box",
+                        "keepalive": true,
+                        "tasks": [
+                            {
+                                "type": "shell",
+                                "inline": "echo \"ARRRRRRUUUUUUUUUBAAAAAAAA!\""
+                            }        
+                        ]
+                    }
+                ]
             }
         }
         """
@@ -71,7 +78,9 @@ Feature: Tasks
         When I run `zerg rush arubatask`
         Then the output should contain:
         """
-        Will leave instances running.
+        ARRRRRRUUUUUUUUUBAAAAAAAA!
+        zergling_0 is marked as keepalive, skipping halt...
+        Some instances were left running.
         SUCCESS!
         """
         And the exit status should be 0

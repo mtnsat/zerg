@@ -1,0 +1,18 @@
+"create": {
+  "type": "boolean"
+},
+"disabled": {
+  "type": "boolean"
+},
+"group": {
+  "type": "string"
+},
+"mount_options": {
+  "type": "array"
+},
+"owner": {
+  "type": "string"
+},
+"type": {
+  "type": "string"
+}

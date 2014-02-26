@@ -1,89 +1,151 @@
 {
   "type": "object",
   "properties": {
-    "instances": {
+    "num_instances": {
       "type": "integer",
-      "minimum": 0
-    },
-    "ram_per_vm": {
-      "type": "integer",
-      "minimum": 256
-    },
-    "synced_folders": {
-      "type": "array",
-      "items": {
-        "properties": {
-          "host_path": {
-            "type": "string"
-          },
-          "guest_path": {
-            "type": "string"
-          },
-          "options": {
-            "type": "array"
-          }
-        },
-        "required": [
-            "host_path",
-            "guest_path"
-        ],
-        "additionalProperties": false
-      }
-    },
-    "tasks": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        <%= driver_tasks_schema %>
-      }
+      "minimum": 1
     },
     "vm": {
       "type": "object",
       "properties": {
+        "private_ip_range": {
+          "type": "string",
+          "pattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(\\d|[1-2]\\d|3[0-2]))$"
+        },
         "driver": {
           "type": "object",
           "properties": {
             "drivertype": {
               "type": "string"
             },
-            "providertype": {
-              "type": "string"
-            },
-            "provider_options": {
-              "type": "array"
+            "driveroptions": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "properties": { <%= driver_options_schema %> }
+              }
             }
           },
           "required": [
-              "drivertype",
-              "providertype",
-              "provider_options"
+              "drivertype"
           ],
           "additionalProperties": false
         },
-        "private_network": {
-          "type": "boolean"
-        },
-        "basebox": {
-          "type": "string"
-        },
-        "bridge_description": {
-          "type": "string"
-        },
-        "keepalive": {
-          "type": "boolean"
-        }
+        "instances": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "properties": {
+              "basebox": {
+                "type": "string"
+              },
+              "keepalive": {
+                "type": "boolean"
+              },
+              "tasks": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "properties": { <%= driver_tasks_schema %> }
+                }
+              },
+              "synced_folders": {
+                "type": "array",
+                "items": {
+                  "properties": {
+                    "host_path": {
+                      "type": "string"
+                    },
+                    "guest_path": {
+                      "type": "string"
+                    },
+                    "additional": {
+                      "type": "object",
+                      "properties": { <%= driver_folders_schema %> }
+                    }
+                  },
+                  "required": [
+                      "host_path",
+                      "guest_path"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "forwarded_ports": {
+                "type": "array",
+                "items": {
+                  "properties": {
+                    "guest_port": {
+                      "type": "integer"
+                    },
+                    "host_port": {
+                      "type": "integer"
+                    },
+                    "additional": {
+                      "type": "object",
+                      "properties": { <%= driver_ports_schema %> }
+                    }
+                  },
+                  "required": [
+                      "guest_port",
+                      "host_port"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "networks": {
+                "type": "array",
+                "items": {
+                  "properties": { <%= driver_networks_schema %> }
+                }
+              },
+              "ssh": {
+                "type": "object",
+                "items": {
+                  "properties": {
+                    "username": {
+                      "type": "string"
+                    },
+                    "host": {
+                      "type": "string"
+                    },
+                    "port": {
+                      "type": "integer"
+                    },
+                    "guest_port": {
+                      "type": "integer"
+                    },
+                    "private_key_path": {
+                      "type": "string"
+                    },
+                    "forward_agent": {
+                      "type": "boolean"
+                    },
+                    "additional": {
+                      "type": "object",
+                      "properties": { <%= driver_ssh_schema %> }
+                    }
+                  }
+                }              
+              }              
+            },
+            "required": [
+                "basebox",
+                "tasks"
+            ],
+            "additionalProperties": false
+          }
+        } 
       },
       "required": [
           "driver",
-          "private_network",
-          "basebox"
+          "instances"
       ],
       "additionalProperties": false
     }
   },
   "required": [
-      "instances",
-      "tasks",
+      "num_instances",
       "vm"
   ],
   "additionalProperties": false

@@ -24,24 +24,18 @@
 require 'awesome_print'
 require 'fileutils'
 require 'securerandom'
+require 'ipaddress'
+require 'digest/sha1'
+require 'ipaddress'
 require_relative 'erbalize'
 
 class Renderer
 
-    # generate a virtualbox - compatible MAC address
-    def generateMACAddress()
-        firstChar = (0..255).map(&:chr).select{|x| x =~ /[0-9A-Fa-f]/}.sample(1).join
-        secondChar = (0..255).map(&:chr).select{|x| x =~ /[02468ACEace]/}.sample(1).join
-        restOfChars = (0..255).map(&:chr).select{|x| x =~ /[0-9A-Fa-f]/}.sample(10).join
-        return "#{firstChar}#{secondChar}#{restOfChars}"
-    end
-
     def initialize(hive_location, task_name, task_hash)
         @vm = task_hash["vm"]
         @name = task_name
-        @instances = task_hash["instances"]
-        @tasks = task_hash["tasks"]
-        @synced_folders = task_hash["synced_folders"]
+        @num_instances = task_hash["num_instances"]
+        @vm_instances = task_hash["vm"]["instances"]
         @hive_location = hive_location
     end
 
@@ -57,103 +51,220 @@ class Renderer
         # load the machine details template
         machine_template = File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "resources", "machine.template"), 'r').read
 
-        # load the bridge details template
-        bridge_template = File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "resources", "bridging.template"), 'r').read
-
-        # load the host only network details template
-        hostonly_template = File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "resources", "hostonly.template"), 'r').read
 
         # render templates....
-        # render provider details to string
-        # 
-        # render provider details into a string
-        provider_details_array = @vm["driver"]["provider_options"]
-        provider_details = ""
-        for index in 0..provider_details_array.length - 1
-            provider_details += "\t\t" + provider_details_array[index] + "\n"
+
+        # all machines
+        all_machines = ""
+
+        # JSON - defined range of ip addresses in CIDR format
+        ip_range = (@vm.has_key?("private_ip_range")) ? IPAddress(@vm["private_ip_range"]).hosts : nil
+        if ip_range != nil
+            abort("ERROR: ip range (#{@vm["private_ip_range"]}) does not have enough ip addresses for all instances.") unless ip_range.length > @num_instances
         end
 
-        # render provider parent
-        sources =  {
-            :provider => @vm["driver"]["providertype"],
-            :provider_specifics => provider_details
-        }
-        provider_parent_string = Erbalize.erbalize_hash(provider_parent_template, sources)
+        # last explicitly defined vm instance. 
+        last_defined_vm = nil
 
-        # render machine template
-        all_macs = Array.new
-        all_machines = ""
-        for index in 0..@instances - 1
+        # last explicitly defined driver option set
+        last_defined_driveroption = nil
 
-            # last ip octet offset for host only networking
-            ip_octet_offset = index
+        # render a machine section for each instance.
+        # each machine gets an explicitly defined instance
+        # if there is no explicitly defined instance - last known explicitly defined instance information is used.
+        # For example: if num_instances = 3 and there are 2 vm instances defined, then machine_0 gets instance definition 0, machine_1 gets instance 
+        # definition 1, machine_2 gets instance definition 2
+        for index in 0..@num_instances - 1
 
-            # inject randomized node_name into chef_client tasks
-            @tasks.each { |task| 
-                if task["type"] == "chef_client"
-                    task["node_name"] = "zergling_#{index}_#{SecureRandom.hex(20)}"
+            # grab last defined vm instance, or keep the current one
+            last_defined_vm = (@vm_instances[index] == nil) ? last_defined_vm : @vm_instances[index]
+
+            # grab last defined driver options set, or keep the current one
+            last_defined_driveroption = (@vm["driver"]["driveroptions"][index] == nil) ? last_defined_driveroption : @vm["driver"]["driveroptions"][index]
+
+            # provider type
+            provider = last_defined_driveroption["providertype"]
+
+            # unique name
+            unique_name = "zergling_#{index}_#{SecureRandom.hex(20)}"
+
+            # render provider details to string
+            provider_specifics = ""
+
+            if provider == "aws"
+                # inject private ip for aws provider (if not specified explicitly and if ip range is provided)
+                if last_defined_driveroption.has_key?("provider_options")
+                    if last_defined_driveroption["provider_options"].has_key?("subnet_id")
+                        if !last_defined_driveroption["provider_options"].has_key?("private_ip_address")
+                            if ip_range != nil
+                                provider_specifics += "\t\t\t#{provider}.private_ip_address = #{ip_range[index]}"
+                            end
+                        end
+                    end
                 end
-            }
 
-            # tasks array rendered to ruby string. double encoding to escape quotes and allow for variable expansion
-            tasks_array = @tasks.to_json.to_json
+                # inject name tag
+                if last_defined_driveroption.has_key?("provider_options")
+                    if last_defined_driveroption["provider_options"].has_key?("tags")
+                        if !last_defined_driveroption["provider_options"]["tags"].has_key?("Name")
+                            last_defined_driveroption["provider_options"]["tags"]["Name"] = unique_name
+                        end
+                    else
+                        last_defined_driveroption["provider_options"]["tags"] = { "Name" => unique_name } 
+                    end
+                end
 
-            # do we need the bridging template as well?
-            bridge_section = nil
-            if @vm.has_key?("bridge_description")
-                # mac address to use?
-                new_mac = ""
-                begin
-                    new_mac = generateMACAddress()
-                end while all_macs.include? new_mac
-
-                sources = {
-                    :machine_mac => new_mac,
-                    :bridged_eth_description => @vm["bridge_description"]
-                }
-                bridge_section = Erbalize.erbalize_hash(bridge_template, sources)
             end
 
-            # do we need the host only template as well?
-            hostonly_section = nil
-            if @vm["private_network"] == true
-                sources = {
-                    :machine_name => "zergling_#{index}",
-                    :last_octet => ip_octet_offset + 4, # TODO: this is probably specific to virtualbox networking
-                }
-                hostonly_section = Erbalize.erbalize_hash(hostonly_template, sources)
+            if last_defined_driveroption.has_key?("provider_options")
+                provider_options = last_defined_driveroption["provider_options"]
+                
+                provider_options.each do |key, value|
+                    if value.is_a?(String)
+                        provider_specifics += "\t\t\t#{provider}.#{key} = \"#{value}\"\n"
+                    elsif value.is_a?(Array)
+                        provider_specifics += "\t\t\t#{provider}.#{key} = #{value.to_json}\n"
+                    else
+                        provider_specifics += "\t\t\t#{provider}.#{key} = #{value}\n" 
+                    end
+                end
             end
 
-            # synced folders
-            folder_definitions = nil
-            if @synced_folders != nil
-                folder_definitions = ""
-                @synced_folders.each { |folder| 
-                    other_options = ""
-                    if folder.has_key?("options")
-                        folder["options"].each { |option|
+            if last_defined_driveroption.has_key?("raw_options")
+                raw_provider_options = last_defined_driveroption["raw_options"]    
+                raw_provider_options.each { |raw_option|
+                    provider_specifics += "\t\t\t#{raw_option}\n"
+                }
+            end
+
+            # render networks
+            network_specifics = ""
+            if last_defined_vm.has_key?("networks")
+                last_defined_vm["networks"].each { |network|
+                    network_specifics += "\t\tzergling_#{index}.vm.network \"#{network["type"]}\""
+                    if network.has_key?("bridge")
+                        network_specifics += ", bridge: \"#{network["bridge"]}\""
+                    end
+                    if network.has_key?("ip")
+                        network_specifics += ", ip: \"#{network["ip"]}\""
+                    elsif ip_range != nil && network["type"] != "public_network"
+                        # first host IP is the host machine
+                        network_specifics += ", ip: \"#{ip_range[index + 1]}\""
+                    end                        
+
+                    if network.has_key?("additional")
+                        network["additional"].each do |key, value|
+                            if value.is_a?(String)
+                                network_specifics += ", #{key}: \"#{value}\""
+                            else
+                                network_specifics += ", #{key}: #{value}" 
+                            end
+                        end
+                    end
+                    network_specifics += "\n"
+                }
+            end
+
+            # render sync folders
+            folder_specifics = ""
+            if last_defined_vm.has_key?("synced_folders")
+                last_defined_vm["synced_folders"].each { |folder| 
+                    folder_specifics += "\t\tzergling_#{index}.vm.synced_folder \"#{folder["host_path"]}\", \"#{folder["guest_path"]}\""
+                    if folder.has_key?("additional")
+                        folder["additional"].each do |key, value|
+                            if value.is_a?(String)
+                                folder_specifics += ", #{key}: \"#{value}\""
+                            else
+                                folder_specifics += ", #{key}: #{value}" 
+                            end
+                        end 
+                    end
+                    folder_specifics += "\n"
+                }
+            end
+
+            # render forwarded ports
+            port_specifics = ""
+            if last_defined_vm.has_key?("forwarded_ports")
+                last_defined_vm["forwarded_ports"].each { |port| 
+                    port_specifics += "\t\tzergling_#{index}.vm.network \"forwarded_port\", guest: #{port["guest_port"]}, host: #{port["host_port"]}"
+                    if port.has_key?("additional")
+                        port["additional"].each { |option|
                             option.each do |key, value|
                                 if value.is_a?(String)
-                                    other_options += ", :#{key} => \"#{value}\""
+                                    port_specifics += ", #{key}: \"#{value}\""
                                 else
-                                    other_options += ", :#{key} => #{value}" 
+                                    port_specifics += ", #{key}: #{value}" 
                                 end
                             end
                         } 
                     end
-
-                    folder_definition = "zergling_#{index}.vm.synced_folder \"#{folder['host_path']}\", \"#{folder['guest_path']}\""
-                    folder_definition = "#{folder_definition}#{other_options}" unless other_options.empty?()
-                    folder_definitions += "\t\t#{folder_definition}\n"
+                    port_specifics += "\n"
                 }
             end
 
+            # render ssh settings
+            ssh_specifics = ""
+            if last_defined_vm.has_key?("ssh")
+                if last_defined_vm["ssh"].has_key?("username")
+                    ssh_specifics += "\t\tzergling_#{index}.ssh.username = \"#{last_defined_vm["ssh"]["username"]}\"\n"
+                end
+
+                if last_defined_vm["ssh"].has_key?("host")
+                    ssh_specifics += "\t\tzergling_#{index}.ssh.host = \"#{last_defined_vm["ssh"]["host"]}\"\n"
+                end
+
+                if last_defined_vm["ssh"].has_key?("port")
+                    ssh_specifics += "\t\tzergling_#{index}.ssh.port = #{last_defined_vm["ssh"]["port"]}\n"
+                end
+
+                if last_defined_vm["ssh"].has_key?("guest_port")
+                    ssh_specifics += "\t\tzergling_#{index}.ssh.guest_port = #{last_defined_vm["ssh"]["guest_port"]}\n"
+                end
+
+                if last_defined_vm["ssh"].has_key?("private_key_path")
+                    ssh_specifics += "\t\tzergling_#{index}.ssh.private_key_path = \"#{last_defined_vm["ssh"]["private_key_path"]}\"\n"
+                end
+
+                if last_defined_vm["ssh"].has_key?("forward_agent")
+                    ssh_specifics += "\t\tzergling_#{index}.ssh.forward_agent = #{last_defined_vm["ssh"]["forward_agent"]}\n"
+                end
+                     
+                if last_defined_vm["ssh"].has_key?("additional")
+                    last_defined_vm["ssh"]["additional"].each { |option|
+                        option.each do |key, value|
+                            if value.is_a?(String)
+                                ssh_specifics += "\t\tzergling_#{index}.ssh.#{key} = \"#{value}\"\n"
+                            else
+                                ssh_specifics += "\t\tzergling_#{index}.ssh.#{key} = #{value}\n" 
+                            end
+                        end
+                    } 
+                end
+            end
+
+            # render tasks array
+            # inject randomized node_name into chef_client tasks
+            last_defined_vm["tasks"].each { |task| 
+                if task["type"] == "chef_client"
+                    task["node_name"] = unique_name
+                end
+            }
+
+            # tasks array rendered to ruby string. double encoding to escape quotes and allow for variable expansion
+            tasks_array = last_defined_vm["tasks"].to_json.to_json
+
             sources = {
                 :machine_name => "zergling_#{index}",
-                :bridge_specifics => bridge_section,
-                :hostonly_specifics => hostonly_section,
-                :tasks_array => tasks_array,
-                :sync_folders_array => folder_definitions 
+                :basebox_path => last_defined_vm["basebox"],
+                :box_name => Digest::SHA1.hexdigest("#{@name}#{provider}#{last_defined_vm["basebox"]}"),
+                :provider => provider,
+                :provider_specifics => provider_specifics,
+                :networks_array => network_specifics,
+                :sync_folders_array => folder_specifics,
+                :ports_array => port_specifics,
+                :ssh_specifics => ssh_specifics,
+                :tasks_array => tasks_array
             }.delete_if { |k, v| v.nil? }
 
             machine_section = Erbalize.erbalize_hash(machine_template, sources)
@@ -161,9 +272,6 @@ class Renderer
         end
 
         sources = {
-            :provider_section => provider_parent_string,
-            :basebox_path => @vm["basebox"],
-            :box_name => "zergling_#{@name}_#{@vm["driver"]["providertype"]}",
             :vm_defines => all_machines
         }
         full_template = Erbalize.erbalize_hash(main_template, sources)
