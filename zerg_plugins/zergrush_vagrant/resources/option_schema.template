@@ -1,11 +1,9 @@
-{
-  "providertype": {
-    "type": "string"
-  },
-  "provider_options": {
-    "type": "object"
-  },
-  "raw_options": {
-    "type": "array"
-  }
+"providertype": {
+"type": "string"
+},
+"provider_options": {
+"type": "object"
+},
+"raw_options": {
+"type": "array"
 }

@@ -40,23 +40,8 @@ module Zerg
 
             def copy_sample_task
                 load_path = (ENV['HIVE_CWD'] == nil) ? File.join("#{Dir.pwd}", ".hive") : File.join("#{ENV['HIVE_CWD']}", ".hive")
-                opts = {
-                    :instances => 3,
-                    :drivertype => "vagrant",
-                    :providertype => "virtualbox",
-                    :baseboxpath => "http://files.vagrantup.com/precise32.box",
-                    :privatenetwork => true
-                }
-                template("template.ke", "#{File.join(load_path, "helloworld.ke")}", opts)
-
-                opts = {
-                    :instances => 3,
-                    :drivertype => "vagrant",
-                    :providertype => "aws",
-                    :baseboxpath => "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box",
-                    :privatenetwork => false
-                }
-                template("awstemplate.ke", "#{File.join(load_path, "helloaws.ke")}", opts)
+                template("template.ke", "#{File.join(load_path, "helloworld.ke")}")
+                template("awstemplate.ke", "#{File.join(load_path, "helloaws.ke")}")
             end
         end
     end

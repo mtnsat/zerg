@@ -95,6 +95,8 @@ class Vagrant < ZergGemPlugin::Plugin "/driver"
 
         # halt only the machines that are not marked as "keepalive"
         last_defined_driveroption = nil
+        last_defined_vm = nil
+
         halt_pid = nil
         keepalive_left = false
         for index in 0..task_hash["num_instances"] - 1
@@ -102,7 +104,10 @@ class Vagrant < ZergGemPlugin::Plugin "/driver"
             # grab last defined driver options set, or keep the current one
             last_defined_driveroption = (task_hash["vm"]["driver"]["driveroptions"][index] == nil) ? last_defined_driveroption : task_hash["vm"]["driver"]["driveroptions"][index]
             
-            if task_hash["vm"]["instances"][index]["keepalive"] != true
+            # grab last defined vm instance, or keep the current one
+            last_defined_vm = (task_hash["vm"]["instances"][index] == nil) ? last_defined_vm : task_hash["vm"]["instances"][index]
+            
+            if last_defined_vm["keepalive"] != true
                 halt_pid = Process.spawn(
                     {
                         "VAGRANT_CWD" => File.join("#{hive_location}", "driver", task_hash["vm"]["driver"]["drivertype"], task_name),
@@ -162,12 +167,12 @@ class Vagrant < ZergGemPlugin::Plugin "/driver"
             # grab last defined vm instance, or keep the current one
             last_defined_vm = (task_hash["vm"]["instances"][index] == nil) ? last_defined_vm : task_hash["vm"]["instances"][index]
             
-            boxname = Digest::SHA1.base64digest "#{task_name}#{last_defined_driveroption["providertype"]}#{last_defined_vm["basebox"]}"
+            boxname = Digest::SHA1.hexdigest "#{task_name}#{last_defined_driveroption["providertype"]}#{last_defined_vm["basebox"]}"
             cleanup_pid = Process.spawn(
                 {
                     "VAGRANT_CWD" => File.join("#{hive_location}", "driver", task_hash["vm"]["driver"]["drivertype"], task_name)
                 },
-                "vagrant box remove #{boxname}#{debug_string} #{task_hash["vm"]["driver"]["providertype"]}")
+                "vagrant box remove #{boxname} #{last_defined_driveroption["providertype"]}#{debug_string}")
             Process.wait(cleanup_pid)
         end
     end

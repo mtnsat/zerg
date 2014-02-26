@@ -26,6 +26,7 @@ require 'fileutils'
 require 'securerandom'
 require 'ipaddress'
 require 'digest/sha1'
+require 'ipaddress'
 require_relative 'erbalize'
 
 class Renderer
@@ -57,7 +58,7 @@ class Renderer
         all_machines = ""
 
         # JSON - defined range of ip addresses in CIDR format
-        ip_range = (@vm.has_key?("private_ip_range")) ? IPaddress(@vm["private_ip_range"]).hosts : nil
+        ip_range = (@vm.has_key?("private_ip_range")) ? IPAddress(@vm["private_ip_range"]).hosts : nil
         if ip_range != nil
             abort("ERROR: ip range (#{@vm["private_ip_range"]}) does not have enough ip addresses for all instances.") unless ip_range.length > @num_instances
         end
@@ -92,24 +93,24 @@ class Renderer
 
             if provider == "aws"
                 # inject private ip for aws provider (if not specified explicitly and if ip range is provided)
-                if last_defined_driveroption.has_key("provider_options")
-                    if last_defined_driveroption["provider_options"].has_key("subnet_id")
-                        if !last_defined_driveroption["provider_options"].has_key("private_ip_address")
+                if last_defined_driveroption.has_key?("provider_options")
+                    if last_defined_driveroption["provider_options"].has_key?("subnet_id")
+                        if !last_defined_driveroption["provider_options"].has_key?("private_ip_address")
                             if ip_range != nil
-                                provider_specifics += "#{provider}.private_ip_address = #{ip_range[index]}"
+                                provider_specifics += "\t\t\t#{provider}.private_ip_address = #{ip_range[index]}"
                             end
                         end
                     end
                 end
 
                 # inject name tag
-                if last_defined_driveroption.has_key("provider_options")
-                    if last_defined_driveroption["provider_options"].has_key("tags")
-                        if !last_defined_driveroption["provider_options"]["tags"].has_key?("name")
-                            last_defined_driveroption["provider_options"]["tags"]["name"] = unique_name
+                if last_defined_driveroption.has_key?("provider_options")
+                    if last_defined_driveroption["provider_options"].has_key?("tags")
+                        if !last_defined_driveroption["provider_options"]["tags"].has_key?("Name")
+                            last_defined_driveroption["provider_options"]["tags"]["Name"] = unique_name
                         end
                     else
-                        last_defined_driveroption["provider_options"]["tags"] = { "name" => unique_name } 
+                        last_defined_driveroption["provider_options"]["tags"] = { "Name" => unique_name } 
                     end
                 end
 
@@ -120,9 +121,11 @@ class Renderer
                 
                 provider_options.each do |key, value|
                     if value.is_a?(String)
-                        provider_specifics += "#{provider}.#{key} = \"#{value}\"\n"
+                        provider_specifics += "\t\t\t#{provider}.#{key} = \"#{value}\"\n"
+                    elsif value.is_a?(Array)
+                        provider_specifics += "\t\t\t#{provider}.#{key} = #{value.to_json}\n"
                     else
-                        provider_specifics += "#{provider}.#{key} = #{value}\n" 
+                        provider_specifics += "\t\t\t#{provider}.#{key} = #{value}\n" 
                     end
                 end
             end
@@ -130,7 +133,7 @@ class Renderer
             if last_defined_driveroption.has_key?("raw_options")
                 raw_provider_options = last_defined_driveroption["raw_options"]    
                 raw_provider_options.each { |raw_option|
-                    provider_specifics += raw_option + "\n"
+                    provider_specifics += "\t\t\t#{raw_option}\n"
                 }
             end
 
@@ -138,13 +141,13 @@ class Renderer
             network_specifics = ""
             if last_defined_vm.has_key?("networks")
                 last_defined_vm["networks"].each { |network|
-                    network_specifics += "zergling_#{index}.vm.network \"#{network["type"]}\""
+                    network_specifics += "\t\tzergling_#{index}.vm.network \"#{network["type"]}\""
                     if network.has_key?("bridge")
                         network_specifics += ", bridge: \"#{network["bridge"]}\""
                     end
                     if network.has_key?("ip")
                         network_specifics += ", ip: \"#{network["ip"]}\""
-                    elsif ip_range != nil
+                    elsif ip_range != nil && network["type"] != "public_network"
                         # first host IP is the host machine
                         network_specifics += ", ip: \"#{ip_range[index + 1]}\""
                     end                        
@@ -152,12 +155,13 @@ class Renderer
                     if network.has_key?("additional")
                         network["additional"].each do |key, value|
                             if value.is_a?(String)
-                                network_specifics += ", #{key}: \"#{value}\"\n"
+                                network_specifics += ", #{key}: \"#{value}\""
                             else
-                                network_specifics += ", #{key}: #{value}\n" 
+                                network_specifics += ", #{key}: #{value}" 
                             end
                         end
                     end
+                    network_specifics += "\n"
                 }
             end
 
@@ -165,17 +169,15 @@ class Renderer
             folder_specifics = ""
             if last_defined_vm.has_key?("synced_folders")
                 last_defined_vm["synced_folders"].each { |folder| 
-                    folder_specifics += "zergling_#{index}.vm.synced_folder \"#{folder["host_path"]}\", \"#{folder["guest_path"]}\""
+                    folder_specifics += "\t\tzergling_#{index}.vm.synced_folder \"#{folder["host_path"]}\", \"#{folder["guest_path"]}\""
                     if folder.has_key?("additional")
-                        folder["additional"].each { |option|
-                            option.each do |key, value|
-                                if value.is_a?(String)
-                                    folder_specifics += ", #{key}: \"#{value}\""
-                                else
-                                    folder_specifics += ", #{key}: #{value}" 
-                                end
+                        folder["additional"].each do |key, value|
+                            if value.is_a?(String)
+                                folder_specifics += ", #{key}: \"#{value}\""
+                            else
+                                folder_specifics += ", #{key}: #{value}" 
                             end
-                        } 
+                        end 
                     end
                     folder_specifics += "\n"
                 }
@@ -185,9 +187,9 @@ class Renderer
             port_specifics = ""
             if last_defined_vm.has_key?("forwarded_ports")
                 last_defined_vm["forwarded_ports"].each { |port| 
-                    port_specifics += "zergling_#{index}.vm.network \"forwarded_port\", guest: #{port["guest_port"]}, host: #{port["host_port"]}"
-                    if folder.has_key?("additional")
-                        folder["additional"].each { |option|
+                    port_specifics += "\t\tzergling_#{index}.vm.network \"forwarded_port\", guest: #{port["guest_port"]}, host: #{port["host_port"]}"
+                    if port.has_key?("additional")
+                        port["additional"].each { |option|
                             option.each do |key, value|
                                 if value.is_a?(String)
                                     port_specifics += ", #{key}: \"#{value}\""
@@ -205,36 +207,36 @@ class Renderer
             ssh_specifics = ""
             if last_defined_vm.has_key?("ssh")
                 if last_defined_vm["ssh"].has_key?("username")
-                    ssh_specifics += "zergling_#{index}.ssh.username = \"#{last_defined_vm["ssh"]["username"]}\"\n"
+                    ssh_specifics += "\t\tzergling_#{index}.ssh.username = \"#{last_defined_vm["ssh"]["username"]}\"\n"
                 end
 
                 if last_defined_vm["ssh"].has_key?("host")
-                    ssh_specifics += "zergling_#{index}.ssh.host = \"#{last_defined_vm["ssh"]["host"]}\"\n"
+                    ssh_specifics += "\t\tzergling_#{index}.ssh.host = \"#{last_defined_vm["ssh"]["host"]}\"\n"
                 end
 
                 if last_defined_vm["ssh"].has_key?("port")
-                    ssh_specifics += "zergling_#{index}.ssh.port = #{last_defined_vm["ssh"]["port"]}\n"
+                    ssh_specifics += "\t\tzergling_#{index}.ssh.port = #{last_defined_vm["ssh"]["port"]}\n"
                 end
 
                 if last_defined_vm["ssh"].has_key?("guest_port")
-                    ssh_specifics += "zergling_#{index}.ssh.guest_port = #{last_defined_vm["ssh"]["guest_port"]}\n"
+                    ssh_specifics += "\t\tzergling_#{index}.ssh.guest_port = #{last_defined_vm["ssh"]["guest_port"]}\n"
                 end
 
-                if last_defined_vm["ssh"].has_key?("pk_path")
-                    ssh_specifics += "zergling_#{index}.ssh.private_key_path = \"#{last_defined_vm["ssh"]["private_key_path"]}\"\n"
+                if last_defined_vm["ssh"].has_key?("private_key_path")
+                    ssh_specifics += "\t\tzergling_#{index}.ssh.private_key_path = \"#{last_defined_vm["ssh"]["private_key_path"]}\"\n"
                 end
 
                 if last_defined_vm["ssh"].has_key?("forward_agent")
-                    ssh_specifics += "zergling_#{index}.ssh.forward_agent = #{last_defined_vm["ssh"]["forward_agent"]}\n"
+                    ssh_specifics += "\t\tzergling_#{index}.ssh.forward_agent = #{last_defined_vm["ssh"]["forward_agent"]}\n"
                 end
                      
                 if last_defined_vm["ssh"].has_key?("additional")
                     last_defined_vm["ssh"]["additional"].each { |option|
                         option.each do |key, value|
                             if value.is_a?(String)
-                                ssh_specifics += "zergling_#{index}.ssh.#{key} = \"#{value}\"\n"
+                                ssh_specifics += "\t\tzergling_#{index}.ssh.#{key} = \"#{value}\"\n"
                             else
-                                ssh_specifics += "zergling_#{index}.ssh.#{key} = #{value}\n" 
+                                ssh_specifics += "\t\tzergling_#{index}.ssh.#{key} = #{value}\n" 
                             end
                         end
                     } 
@@ -255,7 +257,7 @@ class Renderer
             sources = {
                 :machine_name => "zergling_#{index}",
                 :basebox_path => last_defined_vm["basebox"],
-                :box_name => Digest::SHA1.base64digest "#{@name}#{provider}#{last_defined_vm["basebox"]}",
+                :box_name => Digest::SHA1.hexdigest("#{@name}#{provider}#{last_defined_vm["basebox"]}"),
                 :provider => provider,
                 :provider_specifics => provider_specifics,
                 :networks_array => network_specifics,
