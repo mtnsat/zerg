@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    zergrush (0.0.4)
+    zergrush (0.0.5)
       awesome_print
       highline
       json-schema
@@ -71,6 +71,7 @@ GEM
       ruby-libvirt (~> 0.4.0)
     vagrant-omnibus (1.2.1)
     zergrush_vagrant (0.0.1)
+      ipaddress
       vagrant-aws
       vagrant-libvirt
       vagrant-omnibus
