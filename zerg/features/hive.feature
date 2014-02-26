@@ -10,31 +10,65 @@ Feature: Hive
             Then the file ".hive/helloworld.ke" should contain:
                 """
                 {
-                    "instances": 3,
-                    "tasks": [
-                        {
-                            "type": "shell",
-                            "inline": "echo \"ZERG RUSH!\""
-                        }        
-                    ],
+                    "num_instances": 3,
                     "vm": {
                         "driver": {
                             "drivertype": "vagrant",
-                            "providertype": "virtualbox",
-                            "provider_options": [
-                                "virtualbox.gui = false",
-                                "virtualbox.memory = 256",
-                                "# adjust for DNS weirdness in ubuntu 12.04",
-                                "virtualbox.customize ['modifyvm', :id,  '--natdnsproxy1', 'off']",
-                                "virtualbox.customize ['modifyvm', :id,  '--natdnshostresolver1', 'off']",
-                                "# set virtio type on the NIC driver. Better performance for large traffic bursts",
-                                "virtualbox.customize ['modifyvm', :id,  '--nictype1', 'virtio']",
-                                "virtualbox.customize ['modifyvm', :id,  '--nictype2', 'virtio']",
-                                "virtualbox.customize ['modifyvm', :id,  '--nictype3', 'virtio']"
+                            "driveroptions": [
+                                {
+                                    "providertype": "virtualbox",
+                                    "provider_options" : {
+                                        "gui": false,
+                                        "memory": 256
+                                    }
+                                }
                             ]
                         },
-                        "basebox": "http://files.vagrantup.com/precise32.box",
-                        "private_network": true
+                        "private_ip_range": "192.168.50.0/24",
+                        "instances": [
+                            {
+                                "basebox": "http://files.vagrantup.com/precise32.box",
+                                "keepalive": true,
+                                "tasks": [
+                                    {
+                                        "type": "shell",
+                                        "inline": "cd /zerg/hosthome; touch helloworld.result; ping -c 3 192.168.50.1; echo \"ZERG RUSH FIRST!\""
+                                    }        
+                                ],
+                                "synced_folders": [
+                                    {
+                                        "host_path": "~",
+                                        "guest_path": "/zerg/hosthome"
+                                    }        
+                                ],
+                                "forwarded_ports": [
+                                    {
+                                        "guest_port": 8080,
+                                        "host_port": 80
+                                    }        
+                                ],
+                                "networks": [
+                                    {
+                                        "type": "private_network"
+                                    },
+                                    {
+                                        "type": "public_network",
+                                        "bridge": "en1: Wi-Fi (AirPort)"
+                                    }         
+                                ]
+
+                            },
+                            {
+                                "basebox": "http://files.vagrantup.com/precise32.box",
+                                "keepalive": false,
+                                "tasks": [
+                                    {
+                                        "type": "shell",
+                                        "inline": "echo \"ZERG RUSH OTHERS!\""
+                                    }        
+                                ]
+                            }
+                        ]
                     }
                 }
                 """
@@ -42,31 +76,42 @@ Feature: Hive
             Then the file ".hive/helloaws.ke" should contain:
                 """
                 {
-                    "instances": 3,
-                    "tasks": [
-                        {
-                            "type": "shell",
-                            "inline": "echo \"ZERG RUSH PRIME!\""
-                        }        
-                    ],
+                    "num_instances": 3,
                     "vm": {
                         "driver": {
                             "drivertype": "vagrant",
-                            "providertype": "aws",
-                            "provider_options": [
-                                "aws.instance_type = 't1.micro'",
-                                "aws.access_key_id = \"#{ENV['AWS_ACCESS_KEY_ID']}\"",
-                                "aws.secret_access_key = \"#{ENV['AWS_SECRET_ACCESS_KEY']}\"",
-                                "aws.keypair_name = \"#{ENV['AWS_KEY_PAIR']}\"",
-                                "aws.ami = 'ami-3fec7956'",
-                                "aws.region = 'us-east-1'",
-                                "aws.security_groups = [ \"#{ENV['AWS_SECURITY_GROUP']}\" ]",
-                                "override.ssh.username = 'ubuntu'",
-                                "override.ssh.private_key_path = \"#{ENV['AWS_PRIVATE_KEY_PATH']}\""
+                            "driveroptions": [
+                                {
+                                    "providertype": "aws",
+                                    "provider_options" : {
+                                        "instance_type": "t1.micro",
+                                        "access_key_id": "#{ENV['AWS_ACCESS_KEY_ID']}",
+                                        "secret_access_key": "#{ENV['AWS_SECRET_ACCESS_KEY']}",
+                                        "keypair_name": "#{ENV['AWS_KEY_PAIR']}",
+                                        "ami": "ami-3fec7956",
+                                        "region": "us-east-1",
+                                        "security_groups": [ "#{ENV['AWS_SECURITY_GROUP']}" ]
+                                    }
+                                }
                             ]
                         },
-                        "basebox": "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box",
-                        "private_network": false
+                        "private_ip_range": "192.168.50.0/24",
+                        "instances": [
+                            {
+                                "basebox": "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box",
+                                "keepalive": false,
+                                "tasks": [
+                                    {
+                                        "type": "shell",
+                                        "inline": "echo \"ZERG RUSH PRIME!\""
+                                    }        
+                                ],
+                                "ssh": {
+                                    "username": "ubuntu",
+                                    "private_key_path": "#{ENV['AWS_PRIVATE_KEY_PATH']}"      
+                                }
+                            }
+                        ]
                     }
                 }
                 """
@@ -98,23 +143,31 @@ Feature: Hive
         Given a file named "arubatask.ke" with:
             """
             {
-                "instances": 1,
-                "tasks": [
-                    {
-                        "type": "shell",
-                        "inline": "echo \"ARRRRRRRUUUUUBAAAAAAAA!\""
-                    }        
-                ],
+                "num_instances": 1,
                 "vm": {
                     "driver": {
                         "drivertype": "vagrant",
-                        "providertype": "aws",
-                        "provider_options": [
-                            "aws.instance_type = 't1.micro'"
+                        "driveroptions": [
+                            {
+                                "providertype": "aws",
+                                "provider_options" : {
+                                    "instance_type": "t1.micro"
+                                }
+                            }
                         ]
                     },
-                    "basebox": "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box",
-                    "private_network": false
+                    "instances": [
+                        {
+                            "basebox": "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box",
+                            "keepalive": false,
+                            "tasks": [
+                                {
+                                    "type": "shell",
+                                    "inline": "echo \"ARRRRRUUUUUUUUUUUBAAAAA!\""
+                                }        
+                            ]
+                        }
+                    ]
                 }
             }
             """
@@ -165,31 +218,65 @@ Feature: Hive
         Then the file "overriden/hive/dir/.hive/helloworld.ke" should contain:
             """
             {
-                "instances": 3,
-                "tasks": [
-                    {
-                        "type": "shell",
-                        "inline": "echo \"ZERG RUSH!\""
-                    }        
-                ],
+                "num_instances": 3,
                 "vm": {
                     "driver": {
                         "drivertype": "vagrant",
-                        "providertype": "virtualbox",
-                        "provider_options": [
-                            "virtualbox.gui = false",
-                            "virtualbox.memory = 256",
-                            "# adjust for DNS weirdness in ubuntu 12.04",
-                            "virtualbox.customize ['modifyvm', :id,  '--natdnsproxy1', 'off']",
-                            "virtualbox.customize ['modifyvm', :id,  '--natdnshostresolver1', 'off']",
-                            "# set virtio type on the NIC driver. Better performance for large traffic bursts",
-                            "virtualbox.customize ['modifyvm', :id,  '--nictype1', 'virtio']",
-                            "virtualbox.customize ['modifyvm', :id,  '--nictype2', 'virtio']",
-                            "virtualbox.customize ['modifyvm', :id,  '--nictype3', 'virtio']"
+                        "driveroptions": [
+                            {
+                                "providertype": "virtualbox",
+                                "provider_options" : {
+                                    "gui": false,
+                                    "memory": 256
+                                }
+                            }
                         ]
                     },
-                    "basebox": "http://files.vagrantup.com/precise32.box",
-                    "private_network": true
+                    "private_ip_range": "192.168.50.0/24",
+                    "instances": [
+                        {
+                            "basebox": "http://files.vagrantup.com/precise32.box",
+                            "keepalive": true,
+                            "tasks": [
+                                {
+                                    "type": "shell",
+                                    "inline": "cd /zerg/hosthome; touch helloworld.result; ping -c 3 192.168.50.1; echo \"ZERG RUSH FIRST!\""
+                                }        
+                            ],
+                            "synced_folders": [
+                                {
+                                    "host_path": "~",
+                                    "guest_path": "/zerg/hosthome"
+                                }        
+                            ],
+                            "forwarded_ports": [
+                                {
+                                    "guest_port": 8080,
+                                    "host_port": 80
+                                }        
+                            ],
+                            "networks": [
+                                {
+                                    "type": "private_network"
+                                },
+                                {
+                                    "type": "public_network",
+                                    "bridge": "en1: Wi-Fi (AirPort)"
+                                }         
+                            ]
+
+                        },
+                        {
+                            "basebox": "http://files.vagrantup.com/precise32.box",
+                            "keepalive": false,
+                            "tasks": [
+                                {
+                                    "type": "shell",
+                                    "inline": "echo \"ZERG RUSH OTHERS!\""
+                                }        
+                            ]
+                        }
+                    ]
                 }
             }
             """
@@ -197,31 +284,42 @@ Feature: Hive
         Then the file "overriden/hive/dir/.hive/helloaws.ke" should contain:
             """
             {
-                "instances": 3,
-                "tasks": [
-                    {
-                        "type": "shell",
-                        "inline": "echo \"ZERG RUSH PRIME!\""
-                    }        
-                ],
+                "num_instances": 3,
                 "vm": {
                     "driver": {
                         "drivertype": "vagrant",
-                        "providertype": "aws",
-                        "provider_options": [
-                            "aws.instance_type = 't1.micro'",
-                            "aws.access_key_id = \"#{ENV['AWS_ACCESS_KEY_ID']}\"",
-                            "aws.secret_access_key = \"#{ENV['AWS_SECRET_ACCESS_KEY']}\"",
-                            "aws.keypair_name = \"#{ENV['AWS_KEY_PAIR']}\"",
-                            "aws.ami = 'ami-3fec7956'",
-                            "aws.region = 'us-east-1'",
-                            "aws.security_groups = [ \"#{ENV['AWS_SECURITY_GROUP']}\" ]",
-                            "override.ssh.username = 'ubuntu'",
-                            "override.ssh.private_key_path = \"#{ENV['AWS_PRIVATE_KEY_PATH']}\""
+                        "driveroptions": [
+                            {
+                                "providertype": "aws",
+                                "provider_options" : {
+                                    "instance_type": "t1.micro",
+                                    "access_key_id": "#{ENV['AWS_ACCESS_KEY_ID']}",
+                                    "secret_access_key": "#{ENV['AWS_SECRET_ACCESS_KEY']}",
+                                    "keypair_name": "#{ENV['AWS_KEY_PAIR']}",
+                                    "ami": "ami-3fec7956",
+                                    "region": "us-east-1",
+                                    "security_groups": [ "#{ENV['AWS_SECURITY_GROUP']}" ]
+                                }
+                            }
                         ]
                     },
-                    "basebox": "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box",
-                    "private_network": false
+                    "private_ip_range": "192.168.50.0/24",
+                    "instances": [
+                        {
+                            "basebox": "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box",
+                            "keepalive": false,
+                            "tasks": [
+                                {
+                                    "type": "shell",
+                                    "inline": "echo \"ZERG RUSH PRIME!\""
+                                }        
+                            ],
+                            "ssh": {
+                                "username": "ubuntu",
+                                "private_key_path": "#{ENV['AWS_PRIVATE_KEY_PATH']}"      
+                            }
+                        }
+                    ]
                 }
             }
             """
