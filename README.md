@@ -80,7 +80,7 @@ Note that prior to trying the helloaws task you will need to set some environmen
 - AWS_PRIVATE_KEY_PATH - path to the private key .pem
 - AWS_SECURITY_GROUP - name of an AWS security group to use
 
-You will then be bale to run the task with:
+You will then be able to run the task with:
 
 ```
 zerg rush helloaws
@@ -130,7 +130,7 @@ Example task
 --------------
 
 Below example task that:
-- will start 5 virtual machines usign vagrant
+- will start 5 virtual machines using vagrant
 - first machine will be backed by VirtualBox
 - other machines will be backed by AWS
 - first machine will run some shell commands and will have a private network and a public network, bridged over host's AirPort adapter. It will also stay up after all other tasks are doen running
@@ -265,7 +265,7 @@ bundle exec cucumber features/
 Plugins
 --------------
 
-Zerg plugins are ruby gems. Each plugin gem must have an 'init.rb' file lib/<gemname>/init.rb
+Zerg plugins are ruby gems. Each plugin gem must have an 'init.rb' file lib/__gem_name__/init.rb
 
 required in the init.rb file:
 
