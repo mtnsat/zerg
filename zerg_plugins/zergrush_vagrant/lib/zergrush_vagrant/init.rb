@@ -22,12 +22,13 @@
 #++
 
 require 'zerg'
+require 'rbconfig'
 require_relative 'renderer'
 
 # give this class the name you want for your command zergrush_vagrant
 class Vagrant < ZergGemPlugin::Plugin "/driver"
     def rush hive_location, task_name, task_hash, debug
-        abort("ERROR: Vagrant not installed!") unless which("vagrant") != nil
+        check_dependencies
         puts ("Will perform task #{task_name} with contents:\n #{task_hash.ai}")
 
         renderer = Renderer.new(
@@ -126,7 +127,7 @@ class Vagrant < ZergGemPlugin::Plugin "/driver"
     end
 
     def clean hive_location, task_name, task_hash, debug
-        abort("ERROR: Vagrant not installed!") unless which("vagrant") != nil
+        check_dependencies
         puts("Cleaning task #{task_name} ...")
 
         renderer = Renderer.new(
@@ -178,7 +179,7 @@ class Vagrant < ZergGemPlugin::Plugin "/driver"
     end
 
     def halt hive_location, task_name, task_hash, debug
-        abort("ERROR: Vagrant not installed!") unless which("vagrant") != nil
+        check_dependencies
         puts("Halting all vagrant virtual machines for task #{task_name} ...")
         
         renderer = Renderer.new(
@@ -239,6 +240,26 @@ class Vagrant < ZergGemPlugin::Plugin "/driver"
             }
         end
       return nil
+    end
+
+    def check_dependencies
+        abort("ERROR: Vagrant not installed!") unless which("vagrant") != nil
+        required_plugins = ["vagrant-aws", "vagrant-omnibus", "vagrant-berkshelf"]
+        if /linux|arch/i === RbConfig::CONFIG['host_os']
+            required_plugins.push("vagrant-libvirt")
+        end
+
+        required_plugins.each { |plugin|
+            plugin_check_pid = Process.spawn("vagrant plugin list | grep #{plugin}")
+            Process.wait(plugin_check_pid)
+
+            if $?.exitstatus != 0
+                puts "Installing #{plugin}"
+                plugin_check_pid = Process.spawn("vagrant plugin install #{plugin}")
+                Process.wait(plugin_check_pid)
+                abort("ERROR: #{plugin} installation failed!") unless $?.exitstatus == 0
+            end
+        }
     end
 end
 

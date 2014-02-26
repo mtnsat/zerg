@@ -19,9 +19,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rake"
   s.add_development_dependency "zergrush"
 
-  s.add_dependency "vagrant-omnibus"
-  s.add_dependency "vagrant-aws"
-  s.add_dependency "vagrant-libvirt"
   s.add_dependency "ipaddress"
 
   s.files        = `git ls-files`.split("\n")
