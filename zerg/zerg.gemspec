@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
   s.add_dependency "json-schema"
   s.add_dependency "thor"
   s.add_dependency "highline"
-  s.add_dependency "zergrush_vagrant"
+  s.add_dependency "zergrush_vagrant", ">= 0.0.3"
 
   s.files        = `git ls-files`.split("\n")
   s.executables  = `git ls-files`.split("\n").map{|f| f =~ /^bin\/(.*)/ ? $1 : nil}.compact
