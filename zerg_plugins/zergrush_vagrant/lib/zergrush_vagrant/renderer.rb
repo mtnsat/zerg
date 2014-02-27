@@ -86,7 +86,7 @@ class Renderer
             provider = last_defined_driveroption["providertype"]
 
             # unique name
-            unique_name = "zergling_#{index}_#{SecureRandom.hex(20)}"
+            unique_name = "zergling-#{index}-#{Digest::SHA1.hexdigest("#{@name}#{provider}#{last_defined_vm["basebox"]}#{@hive_location}")}"
 
             # render provider details to string
             provider_specifics = ""
@@ -256,6 +256,7 @@ class Renderer
 
             sources = {
                 :machine_name => "zergling_#{index}",
+                :node_name => unique_name,
                 :basebox_path => last_defined_vm["basebox"],
                 :box_name => Digest::SHA1.hexdigest("#{@name}#{provider}#{last_defined_vm["basebox"]}"),
                 :provider => provider,

@@ -2,6 +2,7 @@
     config.vm.define "<%= machine_name %>" do |<%= machine_name %>|
         <%= machine_name %>.vm.box_url = "<%= basebox_path %>"
         <%= machine_name %>.vm.box = "<%= box_name %>"
+        <%= machine_name %>.vm.host_name = "<%= node_name %>"
         
 <%= ssh_specifics -%>
 
@@ -17,7 +18,9 @@
         tasks = JSON.parse(<%= tasks_array %>)
         tasks.each { |task| 
             if task["type"] == "chef_client" || task["type"] == "chef_solo"
-                <%= machine_name %>.omnibus.chef_version = :latest   
+                <%= machine_name %>.omnibus.chef_version = :latest
+                <%= machine_name %>.butcher.enabled = true 
+                <%= machine_name %>.butcher.verify_ssl = false 
             end
 
             <%= machine_name %>.vm.provision "#{task["type"]}" do |provisioner| 
