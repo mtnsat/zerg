@@ -21,13 +21,7 @@
 # IN THE SOFTWARE.
 #++
 
-require 'awesome_print'
 require 'fileutils'
-require 'securerandom'
-require 'ipaddress'
-require 'digest/sha1'
-require 'ipaddress'
-require_relative 'erbalize'
 
 class Renderer
 
@@ -48,5 +42,7 @@ class Renderer
         puts ("Writing #{File.join(@hive_location, "driver", @driver, @name, "template.json")}...")
         FileUtils.mkdir_p(File.join(@hive_location, "driver", @driver, @name))
         File.open(File.join("#{@hive_location}", "driver", @vm["driver"]["drivertype"], @name, "template.json"), 'w') { |file| file.write(@template) }
+
+        return @template
     end
 end
