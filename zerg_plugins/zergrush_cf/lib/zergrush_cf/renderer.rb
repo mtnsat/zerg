@@ -23,26 +23,28 @@
 
 require 'fileutils'
 
-class Renderer
+module ZergrushCF
+    class Renderer
 
-    def initialize(hive_location, task_name, task_hash)
-        @vm = task_hash["vm"]
-        @name = task_name
-        @template = task_hash["vm"]["driver"]["driveroptions"]["template"]
-        @driver = task_hash["vm"]["driver"]["drivertype"] 
-        @hive_location = hive_location
-    end
+        def initialize(hive_location, task_name, task_hash)
+            @vm = task_hash["vm"]
+            @name = task_name
+            @template = task_hash["vm"]["driver"]["driveroptions"][0]["template"]
+            @driver = task_hash["vm"]["driver"]["drivertype"] 
+            @hive_location = hive_location
+        end
 
-    def render
-        puts ("Rendering driver templates...")
+        def render
+            puts ("Rendering driver templates...")
 
-        # write cloudformation template to a separate file
-        abort("CLoudFormation template not specified!") unless @template != nil
+            # write cloudformation template to a separate file
+            abort("CloudFormation template not specified!") unless @template != nil
 
-        puts ("Writing #{File.join(@hive_location, "driver", @driver, @name, "template.json")}...")
-        FileUtils.mkdir_p(File.join(@hive_location, "driver", @driver, @name))
-        File.open(File.join("#{@hive_location}", "driver", @vm["driver"]["drivertype"], @name, "template.json"), 'w') { |file| file.write(@template) }
+            puts ("Writing #{File.join(@hive_location, "driver", @driver, @name, "template.json")}...")
+            FileUtils.mkdir_p(File.join(@hive_location, "driver", @driver, @name))
+            File.open(File.join("#{@hive_location}", "driver", @vm["driver"]["drivertype"], @name, "template.json"), 'w') { |file| file.write(@template.to_json) }
 
-        return @template
+            return @template
+        end
     end
 end

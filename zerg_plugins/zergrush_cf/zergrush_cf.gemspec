@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-require File.expand_path("../lib/zergrush_vagrant/version", __FILE__)
+require File.expand_path("../lib/zergrush_cf/version", __FILE__)
 
 Gem::Specification.new do |s|
   s.name        = "zergrush_cf"
@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rake"
   s.add_development_dependency "zergrush", ">= 0.0.7"
 
-  s.add_dependency "ipaddress"
+  s.add_dependency "fog", ">=1.20.0"
 
   s.files        = `git ls-files`.split("\n")
   s.executables  = `git ls-files`.split("\n").map{|f| f =~ /^bin\/(.*)/ ? $1 : nil}.compact

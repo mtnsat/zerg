@@ -37,6 +37,7 @@ module Zerg
             begin
                 pmgr = ZergGemPlugin::Manager.instance
                 pmgr.load
+                puts "/driver/#{Zerg::Hive.instance.hive[task]["vm"]["driver"]["drivertype"]}"
                 driver = pmgr.create("/driver/#{Zerg::Hive.instance.hive[task]["vm"]["driver"]["drivertype"]}")
                 driver.rush Zerg::Hive.instance.load_path, task, Zerg::Hive.instance.hive[task], debug
             rescue ZergGemPlugin::PluginNotLoaded
