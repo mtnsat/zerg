@@ -78,6 +78,10 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
 
         puts("Created stack #{stack_name} with id #{stack_id}")
 
+        # get stack outputs
+        outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
+        puts("Stack outputs: #{outputs_info.ai}")
+
         rescue Fog::Errors::Error => fog_cf_error
             abort ("ERROR: AWS error: #{fog_cf_error.message}")
     end
