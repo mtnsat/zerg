@@ -68,7 +68,7 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
 
         params = eval_params(task_hash["vm"]["driver"]["driveroptions"][0]["template_parameters"])       
 
-        stack_info = cf.create_stack(stack_name, { 'TemplateBody' => template_body.to_json, 'Parameters' => params })
+        stack_info = cf.create_stack(stack_name, { 'TemplateBody' => template_body.to_json, 'Parameters' => params, 'Capabilities' => [ "CAPABILITY_IAM" ] })
 
         # grab the id of the stack
         stack_id = stack_info.body["StackId"]
@@ -76,11 +76,12 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
         # write the result.
         File.open(File.join(hive_location, "driver", task_hash["vm"]["driver"]["drivertype"], task_name, "result"), 'w') { |file| file.write(stack_name) }
 
-        puts("Created stack #{stack_name} with id #{stack_id}")
+        puts("Created stack #{stack_name} with id #{stack_id}\n-----------------------------")
 
         # get stack outputs
         outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
-        puts("Stack outputs: #{outputs_info.ai}")
+        puts("Stack outputs:\n")
+        ap outputs_info.body
 
         rescue Fog::Errors::Error => fog_cf_error
             abort ("ERROR: AWS error: #{fog_cf_error.message}")
