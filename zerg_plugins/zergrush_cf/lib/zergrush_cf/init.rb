@@ -27,6 +27,7 @@ require 'excon'
 require 'rbconfig'
 require 'awesome_print'
 require 'securerandom'
+require 'ruby-progressbar'
 require_relative 'renderer'
 
 class CloudFormation < ZergGemPlugin::Plugin "/driver"
@@ -45,7 +46,6 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
 
         abort("AWS key id is not specified in task") unless aws_key_id != nil
         abort("AWS secret is not specified in task") unless aws_secret != nil
-        puts ("Will perform task #{task_name} with contents:\n #{task_hash.ai}")
 
         renderer = ZergrushCF::Renderer.new(
             hive_location, 
@@ -58,37 +58,39 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
             :aws_secret_access_key => aws_secret
         )
 
-        if FileTest.exist?(File.join(hive_location, "driver", task_hash["vm"]["driver"]["drivertype"], task_name, "result"))
-            stack_name = File.read(File.join(hive_location, "driver", task_hash["vm"]["driver"]["drivertype"], task_name, "result"))
-            abort("Task #{task_name} already has an assigned cloud formation stack #{stack_name}. Clean #{task_name} first.")
-        end
-
         # create the cloudformation stack
-        stack_name = "#{task_name}-#{SecureRandom.hex}"
+        stack_name = "#{task_name}"
 
+        progressbar = nil
         params = eval_params(task_hash["vm"]["driver"]["driveroptions"][0]["template_parameters"])       
-
         stack_info = cf.create_stack(stack_name, { 'TemplateBody' => template_body.to_json, 'Parameters' => params, 'Capabilities' => [ "CAPABILITY_IAM" ] })
 
         # grab the id of the stack
         stack_id = stack_info.body["StackId"]
-
-        # write the result.
-        File.open(File.join(hive_location, "driver", task_hash["vm"]["driver"]["drivertype"], task_name, "result"), 'w') { |file| file.write(stack_name) }
-
-        puts("Created stack #{stack_name} with id #{stack_id}\n-----------------------------")
+        puts("Creating stack #{stack_name} with id #{stack_id}\n-----------------------------")
+        progressbar = ProgressBar.create(:starting_at => 20, :total => nil)
 
         # get stack outputs
         outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
-        puts("Stack outputs:\n")
-        ap outputs_info.body
+
+        until outputs_info.body["Stacks"][0]["StackStatus"] != "CREATE_IN_PROGRESS" do
+            progressbar.increment
+            sleep 2
+
+            outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
+        end
+        progressbar.stop
+        abort "ERROR: Stack #{stack_name} creation failed. Refer to AWS CloudFormation console for further info." unless outputs_info.body["Stacks"][0]["StackStatus"] == "CREATE_COMPLETE"
+        
+        puts("SUCCESS! Stack outputs:")
+        ap outputs_info.body["Stacks"][0]["Outputs"]
 
         rescue Fog::Errors::Error => fog_cf_error
+            progressbar.stop unless progressbar == nil
             abort ("ERROR: AWS error: #{fog_cf_error.message}")
     end
 
     def clean hive_location, task_name, task_hash, debug
-        abort("ERROR: No local stack record for #{task_name}") unless FileTest.exist?(File.join(hive_location, "driver", task_hash["vm"]["driver"]["drivertype"], task_name, "result"))
         
         aws_key_id = task_hash["vm"]["driver"]["driveroptions"][0]["access_key_id"] 
         aws_secret = task_hash["vm"]["driver"]["driveroptions"][0]["secret_access_key"]
@@ -108,20 +110,38 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
         puts("Cleaning task #{task_name} ...")
 
         # run fog cleanup on the stack.
-        stack_name = File.read(File.join(hive_location, "driver", task_hash["vm"]["driver"]["drivertype"], task_name, "result"))
+        stack_name = "#{task_name}"
 
         cf = Fog::AWS::CloudFormation.new(
             :aws_access_key_id => aws_key_id,
             :aws_secret_access_key => aws_secret
         )
 
-        stack_info = cf.delete_stack(stack_name)
-        
-        File.delete(File.join(hive_location, "driver", task_hash["vm"]["driver"]["drivertype"], task_name, "result"))
-        puts("Deleted stack #{stack_name}")
+        progressbar = nil
 
+        stack_info = cf.delete_stack(stack_name)
+        puts("Deleting stack #{stack_name}")
+        progressbar = ProgressBar.create(:starting_at => 20, :total => nil)
+        outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
+
+        while outputs_info.body["Stacks"][0]["StackStatus"] == "DELETE_IN_PROGRESS" do
+            progressbar.increment
+            sleep 2
+
+            begin
+                outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
+            rescue Fog::AWS::CloudFormation::NotFound
+                progressbar.stop
+                break
+            end
+        end
+
+        rescue Fog::AWS::CloudFormation::NotFound
+            progressbar.stop unless progressbar == nil
+            abort ("ERROR: Stack #{stack_name} was not found in AWS.")
         rescue Fog::Errors::Error => fog_cf_error
-            abort ("ERROR: AWS error: #{fog_cf_error.message}")
+            progressbar.stop unless progressbar == nil
+            abort ("ERROR: AWS error: #{fog_cf_error.ai}")
     end
 
     def halt hive_location, task_name, task_hash, debug
