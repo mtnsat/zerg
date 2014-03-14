@@ -63,7 +63,7 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
 
         progressbar = nil
         params = eval_params(task_hash["vm"]["driver"]["driveroptions"][0]["template_parameters"])       
-        stack_info = cf.create_stack(stack_name, { 'TemplateBody' => template_body.to_json, 'Parameters' => params, 'Capabilities' => [ "CAPABILITY_IAM" ] })
+        stack_info = cf.create_stack(stack_name, { 'DisableRollback' => true, 'TemplateBody' => template_body.to_json, 'Parameters' => params, 'Capabilities' => [ "CAPABILITY_IAM" ] })
 
         # grab the id of the stack
         stack_id = stack_info.body["StackId"]
