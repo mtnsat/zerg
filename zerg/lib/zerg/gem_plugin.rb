@@ -184,7 +184,7 @@ module ZergGemPlugin
                     end
                 end
             }
-
+            
             return nil
         end
 

@@ -33,7 +33,6 @@
         },
         "instances": {
           "type": "array",
-          "minItems": 1,
           "items": {
             "properties": {
               "basebox": {
@@ -44,7 +43,6 @@
               },
               "tasks": {
                 "type": "array",
-                "minItems": 1,
                 "items": {
                   "properties": { <%= driver_tasks_schema %> }
                 }
