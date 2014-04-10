@@ -6,8 +6,8 @@ Feature: Hive
     Scenario: Initializing hive
         When I run `zerg init`
             Then the following files should exist:
-                | .hive/helloworld.ke | .hive/helloaws.ke | 
-            Then the file ".hive/helloworld.ke" should contain:
+                | .hive/helloworld/helloworld.ke | .hive/helloaws/helloaws.ke | 
+            Then the file ".hive/helloworld/helloworld.ke" should contain:
                 """
                 {
                     "num_instances": 3,
@@ -73,7 +73,7 @@ Feature: Hive
                 }
                 """
 
-            Then the file ".hive/helloaws.ke" should contain:
+            Then the file ".hive/helloaws/helloaws.ke" should contain:
                 """
                 {
                     "num_instances": 3,
@@ -214,8 +214,8 @@ Feature: Hive
             | HIVE_CWD           | ./overriden/hive/dir |
         When I run `zerg init`
         Then the following files should exist:
-            | overriden/hive/dir/.hive/helloworld.ke | overriden/hive/dir/.hive/helloaws.ke | 
-        Then the file "overriden/hive/dir/.hive/helloworld.ke" should contain:
+            | overriden/hive/dir/.hive/helloworld/helloworld.ke | overriden/hive/dir/.hive/helloaws/helloaws.ke | 
+        Then the file "overriden/hive/dir/.hive/helloworld/helloworld.ke" should contain:
             """
             {
                 "num_instances": 3,
@@ -281,7 +281,7 @@ Feature: Hive
             }
             """
 
-        Then the file "overriden/hive/dir/.hive/helloaws.ke" should contain:
+        Then the file "overriden/hive/dir/.hive/helloaws/helloaws.ke" should contain:
             """
             {
                 "num_instances": 3,

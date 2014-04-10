@@ -48,7 +48,7 @@ module Zerg
 
             # load all .ke files into one big hash
             @hive = Hash.new
-            Dir.glob(File.join("#{@load_path}", "*.ke")) do |ke_file|
+            Dir["#{File.join(@load_path, "**/*.ke")}"].each { |ke_file|
                 # do work on files ending in .rb in the desired directory
                 begin 
                     ke_file_hash = JSON.parse( IO.read(ke_file) )
@@ -56,9 +56,14 @@ module Zerg
                 rescue JSON::ParserError
                     abort("ERROR: Could not parse #{ke_file}. Likely invalid JSON.")
                 end
-            end
+            }
 
             @loaded = true
+        end
+
+        def self.copy_with_path(src, dst)
+            FileUtils.mkdir_p(File.dirname(dst))
+            FileUtils.cp(src, dst)
         end
 
         def self.list
@@ -85,7 +90,7 @@ module Zerg
         def self.verify
             instance.load
 
-            Dir.glob(File.join("#{instance.load_path}", "*.ke")) do |ke_file|
+            Dir["#{File.join("#{instance.load_path}", "**/*.ke")}"].each { |ke_file|
                 begin 
                     ke_file_hash = JSON.parse( File.open(ke_file, 'r').read )
 
@@ -112,7 +117,7 @@ module Zerg
                 rescue ZergGemPlugin::PluginNotLoaded
                     abort("ERROR: driver #{ke_file_hash["vm"]["driver"]["drivertype"]} not found. Did you install the plugin gem?")
                 end
-            end
+            }
 
             puts "SUCCESS!"
         end
@@ -120,7 +125,7 @@ module Zerg
         def self.import(file, force)
             instance.load
             abort("ERROR: '#{file}' not found!") unless File.exist?(file) 
-            abort("ERROR: '#{File.basename(file)}' already exists in hive!") unless !File.exist?(File.join(instance.load_path, File.basename(file))) || force == true
+            abort("ERROR: '#{File.basename(file)}' already exists in hive!") unless !File.directory?(File.join(instance.load_path, File.basename(file))) || force == true
 
             # check the file against schema.
             begin
@@ -145,7 +150,26 @@ module Zerg
                 errors = JSON::Validator.fully_validate(full_schema, ke_file_hash, :errors_as_objects => true)
                 abort("ERROR: #{file} failed validation. Errors: #{errors.ai}") unless errors.empty?
 
-                FileUtils.cp(file, File.join(instance.load_path, File.basename(file)))
+                # copy the .ke file
+                copy_with_path(file, File.join(instance.load_path, File.basename(file, ".*"), File.basename(file)))
+
+                # copy additonal files
+                if ke_file_hash["vm"]["additional_files"] != nil
+                    ke_file_hash["vm"]["additional_files"].each { |additonal_file|
+                        additonal_file_path = additonal_file["from"]
+                        
+                        # eval possible environment variables
+                        if additonal_file_path =~ /^ENV\['.+'\]$/
+                            additonal_file_path = eval(additonal_file_path)
+                        end
+
+                        # determine if a relative path or a full path is provided. relative path should be relative to 
+                        # location of the .ke file
+                        additonal_file_path = ((Pathname.new additonal_file_path).absolute?) ? additonal_file_path : File.expand_path(File.dirname(additonal_file_path), file)
+                        abort("ERROR: '#{additonal_file_path}' not found!") unless File.exist?(additonal_file_path) 
+                        copy_with_path(additonal_file_path, File.join(instance.load_path, File.basename(file, ".*"), additonal_file["to"]))
+                    }
+                end 
             rescue JSON::ParserError => err
                 abort("ERROR: Could not parse #{file}. Likely invalid JSON.")
             end
@@ -154,10 +178,7 @@ module Zerg
 
         def self.remove(taskname, force)
             instance.load 
-            abort("ERROR: '#{taskname}' not found!") unless File.exist?(File.join(instance.load_path, "#{taskname}.ke")) 
-
-            # check the file against schema.
-            taskfile = File.join(instance.load_path, "#{taskname}.ke")
+            abort("ERROR: '#{taskname}' not found!") unless File.directory?(File.join(instance.load_path, "#{taskname}")) 
 
             agreed = true
             if force != true
@@ -167,7 +188,7 @@ module Zerg
             abort("Cancelled!") unless agreed == true
 
             FileUtils.rm_rf(File.join(instance.load_path, "driver", taskname))
-            FileUtils.rm(File.join(instance.load_path, "#{taskname}.ke"))
+            FileUtils.rm_rf(File.join(instance.load_path, "#{taskname}"))
 
             puts "SUCCESS!"
         end

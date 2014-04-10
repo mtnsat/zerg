@@ -9,4 +9,40 @@
 },
 "template_parameters": {
     "type": "object"
+},
+"storage": {
+    "type": "object",
+    "properties": {
+        "s3_bucket": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "public": {
+                    "type": "boolean"
+                },
+                "files": {
+                    "type": "array",
+                    "items": {
+                        "properties": {
+                            "file": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "required": [
+                "name",
+                "public",
+                "files"
+            ],
+            "additionalProperties": false
+        }
+    },
+    "required": [
+        "s3_bucket"
+    ],
+    "additionalProperties": false
 }

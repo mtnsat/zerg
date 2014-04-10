@@ -53,6 +53,35 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
             task_hash)        
         template_body = renderer.render
 
+        # see if we need to upload anything to s3?
+        if task_hash["vm"]["driver"]["driveroptions"][0]["storage"] != nil
+            if task_hash["vm"]["driver"]["driveroptions"][0]["storage"]["s3_bucket"] != nil 
+                bucket_name = task_hash["vm"]["driver"]["driveroptions"][0]["storage"]["s3_bucket"]["name"]
+                is_public = task_hash["vm"]["driver"]["driveroptions"][0]["storage"]["s3_bucket"]["public"]
+                files = task_hash["vm"]["driver"]["driveroptions"][0]["storage"]["s3_bucket"]["files"]
+
+                # create a connection
+                connection = Fog::Storage.new({
+                    :provider => 'AWS',
+                    :aws_access_key_id => aws_key_id,
+                    :aws_secret_access_key => aws_secret
+                })
+
+                directory = connection.directories.create(
+                    :key => bucket_name,
+                    :public => is_public
+                )
+
+                files.each { |file|
+                    directory.files.create(
+                        :key    => file,
+                        :body   => File.open(File.join(hive_location, task_name, file)),
+                        :public => is_public
+                    )
+                }
+            end
+        end
+
         cf = Fog::AWS::CloudFormation.new(
             :aws_access_key_id => aws_key_id,
             :aws_secret_access_key => aws_secret
