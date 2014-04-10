@@ -133,7 +133,29 @@
             ],
             "additionalProperties": false
           }
-        } 
+        },
+        "additional_files": {
+          "type": "array",
+          "items": {
+            "properties": {
+              "file": {
+                "type": "object",
+                "properties": {
+                  "from": {
+                    "type": "string"
+                  },
+                  "to": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "from",
+                  "to"
+                ]
+              }
+            }
+          }
+        }
       },
       "required": [
           "driver",

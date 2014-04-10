@@ -40,8 +40,8 @@ module Zerg
 
             def copy_sample_task
                 load_path = (ENV['HIVE_CWD'] == nil) ? File.join("#{Dir.pwd}", ".hive") : File.join("#{ENV['HIVE_CWD']}", ".hive")
-                template("template.ke", "#{File.join(load_path, "helloworld.ke")}")
-                template("awstemplate.ke", "#{File.join(load_path, "helloaws.ke")}")
+                template("template.ke", "#{File.join(load_path, "helloworld", "helloworld.ke")}")
+                template("awstemplate.ke", "#{File.join(load_path, "helloaws", "helloaws.ke")}")
             end
         end
     end
