@@ -165,7 +165,7 @@ module Zerg
 
                         # determine if a relative path or a full path is provided. relative path should be relative to 
                         # location of the .ke file
-                        additonal_file_path = ((Pathname.new additonal_file_path).absolute?) ? additonal_file_path : File.expand_path(File.dirname(additonal_file_path), file)
+                        additonal_file_path = ((Pathname.new additonal_file_path).absolute?) ? additonal_file_path : File.join(File.dirname(file), additonal_file_path)
                         abort("ERROR: '#{additonal_file_path}' not found!") unless File.exist?(additonal_file_path) 
                         copy_with_path(additonal_file_path, File.join(instance.load_path, File.basename(file, ".*"), additonal_file["to"]))
                     }
