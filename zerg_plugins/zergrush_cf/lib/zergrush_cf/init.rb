@@ -75,7 +75,7 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
                 files.each { |file|
                     directory.files.create(
                         :key    => file,
-                        :body   => File.join(hive_location, task_name, file),
+                        :body   => File.open(File.join(hive_location, task_name, file)),
                         :public => is_public
                     )
                 }
