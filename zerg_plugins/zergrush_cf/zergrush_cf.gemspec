@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "bundler", ">= 1.0.0"
   s.add_development_dependency "rake"
-  s.add_development_dependency "zergrush", ">= 0.0.10"
+  s.add_development_dependency "zergrush", ">= 0.0.11"
 
   s.add_dependency "fog", ">=1.20.0"
   s.add_dependency "ruby-progressbar", "1.4.2"

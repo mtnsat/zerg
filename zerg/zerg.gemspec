@@ -27,7 +27,7 @@ Gem::Specification.new do |s|
   s.add_dependency "thor"
   s.add_dependency "highline"
   s.add_dependency "zergrush_vagrant", ">= 0.0.4"
-  s.add_dependency "zergrush_cf", ">= 0.0.3"
+  s.add_dependency "zergrush_cf", ">= 0.0.4"
 
   s.files        = `git ls-files`.split("\n")
   s.executables  = `git ls-files`.split("\n").map{|f| f =~ /^bin\/(.*)/ ? $1 : nil}.compact
