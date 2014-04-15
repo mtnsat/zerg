@@ -27,7 +27,6 @@ require 'excon'
 require 'rbconfig'
 require 'awesome_print'
 require 'securerandom'
-require 'ruby-progressbar'
 require_relative 'renderer'
 
 class CloudFormation < ZergGemPlugin::Plugin "/driver"
@@ -90,32 +89,45 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
         # create the cloudformation stack
         stack_name = "#{task_name}"
 
-        progressbar = nil
         params = eval_params(task_hash["vm"]["driver"]["driveroptions"][0]["template_parameters"])       
         stack_info = cf.create_stack(stack_name, { 'DisableRollback' => true, 'TemplateBody' => template_body.to_json, 'Parameters' => params, 'Capabilities' => [ "CAPABILITY_IAM" ] })
 
         # grab the id of the stack
         stack_id = stack_info.body["StackId"]
-        puts("Creating stack #{stack_name} with id #{stack_id}\n-----------------------------")
-        progressbar = ProgressBar.create(:starting_at => 20, :total => nil)
+        puts("Creating stack #{stack_name} with id #{stack_id}")
 
-        # get stack outputs
+
+        # get the event collection and initial info
         outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
-
-        until outputs_info.body["Stacks"][0]["StackStatus"] != "CREATE_IN_PROGRESS" do
-            progressbar.increment
-            sleep 2
-
+        while outputs_info == nil do
+            sleep 1 
             outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
         end
-        progressbar.stop
-        abort "ERROR: Stack #{stack_name} creation failed. Refer to AWS CloudFormation console for further info." unless outputs_info.body["Stacks"][0]["StackStatus"] == "CREATE_COMPLETE"
-        
-        puts("SUCCESS! Stack outputs:")
-        ap outputs_info.body["Stacks"][0]["Outputs"]
 
+        events = cf.describe_stack_events(stack_name).body['StackEvents']
+        while events == nil do
+            sleep 1 
+            events = cf.describe_stack_events(stack_name).body['StackEvents']
+        end
+
+        event_counter = 0
+        while outputs_info.body["Stacks"][0]["StackStatus"] == "CREATE_IN_PROGRESS" do
+            logEvents(events.first(events.length - event_counter))
+            event_counter = events.length
+
+            events = cf.describe_stack_events(stack_name).body['StackEvents']
+            outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
+            if outputs_info.body["Stacks"][0]["StackStatus"] == "CREATE_COMPLETE"
+                logEvents(events.first(events.length - event_counter))
+                puts("Stack outputs:")
+                ap outputs_info.body["Stacks"][0]["Outputs"]
+                return 0
+            end
+        end
+
+        abort("ERROR: Failed with stack status: #{outputs_info.body["Stacks"][0]["StackStatus"]}")
+        
         rescue Fog::Errors::Error => fog_cf_error
-            progressbar.stop unless progressbar == nil
             abort ("ERROR: AWS error: #{fog_cf_error.message}")
     end
 
@@ -146,31 +158,58 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
             :aws_secret_access_key => aws_secret
         )
 
-        progressbar = nil
-
         stack_info = cf.delete_stack(stack_name)
         puts("Deleting stack #{stack_name}")
-        progressbar = ProgressBar.create(:starting_at => 20, :total => nil)
-        outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
 
-        while outputs_info.body["Stacks"][0]["StackStatus"] == "DELETE_IN_PROGRESS" do
-            progressbar.increment
-            sleep 2
-
+         # get the event collection and initial info
+        outputs_info = nil
+        while outputs_info == nil do
+            sleep 1 
             begin
                 outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
             rescue Fog::AWS::CloudFormation::NotFound
-                progressbar.stop
-                break
+                return 0
             end
         end
 
-        rescue Fog::AWS::CloudFormation::NotFound
-            progressbar.stop unless progressbar == nil
-            abort ("ERROR: Stack #{stack_name} was not found in AWS.")
+        events = cf.describe_stack_events(stack_name).body['StackEvents']
+        while events == nil do
+            sleep 1
+            begin
+                events = cf.describe_stack_events(stack_name).body['StackEvents']
+            rescue Fog::AWS::CloudFormation::NotFound
+                return 0
+            end
+        end
+
+        event_counter = 0
+        while outputs_info.body["Stacks"][0]["StackStatus"] == "DELETE_IN_PROGRESS" do
+            logEvents(events.first(events.length - event_counter))
+            event_counter = events.length
+            begin
+                events = cf.describe_stack_events(stack_name).body['StackEvents']
+                outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
+            rescue Fog::AWS::CloudFormation::NotFound
+                logEvents(events.first(events.length - event_counter))
+                return 0
+            end
+        end
+
+        abort("ERROR: Failed with stack status: #{outputs_info.body["Stacks"][0]["StackStatus"]}")
+    
         rescue Fog::Errors::Error => fog_cf_error
-            progressbar.stop unless progressbar == nil
             abort ("ERROR: AWS error: #{fog_cf_error.ai}")
+    end
+
+    def logEvents events
+        events.each do |event|
+            puts "Timestamp: #{event['Timestamp']}"
+            puts "LogicalResourceId: #{event['LogicalResourceId']}"
+            puts "ResourceType: #{event['ResourceType']}"
+            puts "ResourceStatus: #{event['ResourceStatus']}"
+            puts "ResourceStatusReason: #{event['ResourceStatusReason']}" if event['ResourceStatusReason']
+            puts "--"
+        end
     end
 
     def halt hive_location, task_name, task_hash, debug
