@@ -20,7 +20,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "zergrush", ">= 0.0.11"
 
   s.add_dependency "fog", ">=1.20.0"
-  s.add_dependency "ruby-progressbar", "1.4.2"
 
   s.files        = `git ls-files`.split("\n")
   s.executables  = `git ls-files`.split("\n").map{|f| f =~ /^bin\/(.*)/ ? $1 : nil}.compact
