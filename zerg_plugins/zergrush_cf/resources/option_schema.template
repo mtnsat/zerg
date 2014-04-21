@@ -13,6 +13,26 @@
 "template_parameters": {
     "type": "object"
 },
+"rabbit": {
+    "type": "object",
+    "properties": {
+        "bunny_params": {
+            "type": "object"
+        },
+        "queue": "string",
+        "exchange": "string",
+        "event_timestamp_name": "string",
+        "event_resource_id_name": "string",
+        "event_resource_type_name": "string",
+        "event_resource_status_name": "string",
+        "event_resource_reason_name": "string"
+    },
+    "required": [
+        "bunny_params",
+        "queue"
+    ],
+    "additionalProperties": false  
+},
 "storage": {
     "type": "object",
     "properties": {

@@ -27,6 +27,7 @@ require 'excon'
 require 'rbconfig'
 require 'awesome_print'
 require 'securerandom'
+require "bunny"
 require_relative 'renderer'
 
 class CloudFormation < ZergGemPlugin::Plugin "/driver"
@@ -45,6 +46,8 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
 
         abort("AWS key id is not specified in task") unless aws_key_id != nil
         abort("AWS secret is not specified in task") unless aws_secret != nil
+
+        rabbit_objects = initRabbitConnection(task_hash["vm"]["driver"]["driveroptions"][0]["rabbit"])
 
         renderer = ZergrushCF::Renderer.new(
             hive_location, 
@@ -113,6 +116,7 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
         event_counter = 0
         while outputs_info.body["Stacks"][0]["StackStatus"] == "CREATE_IN_PROGRESS" do
             logEvents(events.first(events.length - event_counter))
+            logRabbitEvents(events.first(events.length - event_counter), rabbit_objects, task_hash["vm"]["driver"]["driveroptions"][0]["rabbit"]) 
             event_counter = events.length
 
             events = cf.describe_stack_events(stack_name).body['StackEvents']
@@ -121,13 +125,16 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
                 logEvents(events.first(events.length - event_counter))
                 puts("Stack outputs:")
                 ap outputs_info.body["Stacks"][0]["Outputs"]
+                rabbit_objects[:connection].close unless rabbit_objects == nil
                 return 0
             end
         end
 
+        rabbit_objects[:connection].close unless rabbit_objects == nil
         abort("ERROR: Failed with stack status: #{outputs_info.body["Stacks"][0]["StackStatus"]}")
         
         rescue Fog::Errors::Error => fog_cf_error
+            rabbit_objects[:connection].close unless rabbit_objects == nil
             abort ("ERROR: AWS error: #{fog_cf_error.message}")
     end
 
@@ -147,6 +154,8 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
 
         abort("AWS key id is not specified in task") unless aws_key_id != nil
         abort("AWS secret is not specified in task") unless aws_secret != nil
+
+        rabbit_objects = initRabbitConnection(task_hash["vm"]["driver"]["driveroptions"][0]["rabbit"])
 
         puts("Cleaning task #{task_name} ...")
 
@@ -168,6 +177,7 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
             begin
                 outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
             rescue Fog::AWS::CloudFormation::NotFound
+                rabbit_objects[:connection].close unless rabbit_objects == nil
                 return 0
             end
         end
@@ -178,6 +188,7 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
             begin
                 events = cf.describe_stack_events(stack_name).body['StackEvents']
             rescue Fog::AWS::CloudFormation::NotFound
+                rabbit_objects[:connection].close unless rabbit_objects == nil
                 return 0
             end
         end
@@ -185,19 +196,24 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
         event_counter = 0
         while outputs_info.body["Stacks"][0]["StackStatus"] == "DELETE_IN_PROGRESS" do
             logEvents(events.first(events.length - event_counter))
+            logRabbitEvents(events.first(events.length - event_counter), rabbit_objects, task_hash["vm"]["driver"]["driveroptions"][0]["rabbit"]) 
+
             event_counter = events.length
             begin
                 events = cf.describe_stack_events(stack_name).body['StackEvents']
                 outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
             rescue Fog::AWS::CloudFormation::NotFound
                 logEvents(events.first(events.length - event_counter))
+                rabbit_objects[:connection].close unless rabbit_objects == nil
                 return 0
             end
         end
 
+        rabbit_objects[:connection].close unless rabbit_objects == nil
         abort("ERROR: Failed with stack status: #{outputs_info.body["Stacks"][0]["StackStatus"]}")
     
         rescue Fog::Errors::Error => fog_cf_error
+            rabbit_objects[:connection].close unless rabbit_objects == nil
             abort ("ERROR: AWS error: #{fog_cf_error.ai}")
     end
 
@@ -209,6 +225,39 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
             puts "ResourceStatus: #{event['ResourceStatus']}"
             puts "ResourceStatusReason: #{event['ResourceStatusReason']}" if event['ResourceStatusReason']
             puts "--"
+        end
+    end
+
+    def initRabbitConnection rabbitInfo
+        return nil unless rabbitInfo != nil
+        connection_string = "ampq://#{rabbitInfo["user"]}:#{rabbitInfo["password"]}@#{rabbitInfo["server"]}:#{rabbit_port}"
+        conn = Bunny.new(rabbitInfo["bunny_params"])
+        conn.start
+
+        channel = conn.create_channel
+        exch = (rabbitInfo["exchange"] == nil) ? channel.default_echange : channel.direct(rabbitInfo["exchange"])
+
+        return  { :connection => conn, :channel => channel, :exchange => exch }
+    end
+
+    def logRabbitEvents events, rabbit_objects, rabbit_properties
+        timestamp = (rabbit_properties["event_timestamp_name"] == nil) ? "timestamp" : rabbit_properties["event_timestamp_name"]
+        res_id_name = (rabbit_properties["event_resource_id_name"] == nil) ? "resource_id" : rabbit_properties["event_resource_id_name"]
+        res_type_name = (rabbit_properties["event_resource_type_name"] == nil) ? "resource_type" : rabbit_properties["event_resource_type_name"]
+        res_status = (rabbit_properties["event_resource_status_name"] == nil) ? "resource_status" : rabbit_properties["event_resource_status_name"]
+        reason = (rabbit_properties["event_resource_reason_name"] == nil) ? "reason" : rabbit_properties["event_resource_reason_name"]
+
+
+        events.each do |event|
+            event_info = {
+                timestamp.to_sym => "#{event['Timestamp']}",
+                res_id_name.to_sym => "#{event['LogicalResourceId']}",
+                res_type_name.to_sym => "#{event['ResourceType']}",
+                res_status.to_sym => "#{event['ResourceStatus']}",
+                reason.to_sym => "#{event['ResourceStatusReason']}"
+            }
+            
+            rabbit_objects[:exchange].publish(event_info.to_json, :routing_key => rabbit_properties["queue"])
         end
     end
 
