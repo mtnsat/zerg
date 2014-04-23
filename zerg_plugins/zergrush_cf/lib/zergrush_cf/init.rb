@@ -236,7 +236,7 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
         conn.start
 
         channel = conn.create_channel
-        exch = (params["exchange"] == nil) ? channel.default_echange : channel.direct(params["exchange"]["name"], Hash[params["exchange"]["params"].map{ |k, v| [k.to_sym, v] }])
+        exch = (params["exchange"] == nil) ? channel.default_exchange : channel.direct(params["exchange"]["name"], Hash[params["exchange"]["params"].map{ |k, v| [k.to_sym, v] }])
         channel.queue(params["queue"]["name"], Hash[params["queue"]["params"].map{ |k, v| [k.to_sym, v] }]).bind(exch)
 
         return  { :connection => conn, :channel => channel, :exchange => exch }
