@@ -13,6 +13,65 @@
 "template_parameters": {
     "type": "object"
 },
+"rabbit": {
+    "type": "object",
+    "properties": {
+        "bunny_params": {
+            "type": "object"
+        },
+        "queue": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "params": {
+                    "type": "object"
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "additionalProperties": false
+
+        },
+        "exchange": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "params": {
+                    "type": "object"
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "additionalProperties": false
+        },
+        "event_timestamp_name": {
+            "type": "string"
+        },
+        "event_resource_id_name": {
+            "type": "string"
+        },
+        "event_resource_type_name": {
+            "type": "string"
+        },
+        "event_resource_status_name": {
+            "type": "string"
+        },
+        "event_resource_reason_name": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "bunny_params",
+        "queue"
+    ],
+    "additionalProperties": false  
+},
 "storage": {
     "type": "object",
     "properties": {
