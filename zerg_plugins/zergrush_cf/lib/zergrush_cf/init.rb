@@ -236,8 +236,8 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
         conn.start
 
         channel = conn.create_channel
-        exch = (params["exchange"] == nil) ? channel.default_echange : channel.direct(params["exchange"], { :durable => true })
-        channel.queue(rabbitInfo["queue"], { :durable => true }).bind(exch)
+        exch = (params["exchange"] == nil) ? channel.default_echange : channel.direct(params["exchange"]["name"], Hash[params["exchange"]["params"].map{ |k, v| [k.to_sym, v] }])
+        channel.queue(params["queue"]["name"], Hash[params["queue"]["params"].map{ |k, v| [k.to_sym, v] }]).bind(exch)
 
         return  { :connection => conn, :channel => channel, :exchange => exch }
     end
@@ -259,7 +259,7 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
                 reason.to_sym => "#{event['ResourceStatusReason']}"
             }
             
-            rabbit_objects[:exchange].publish(event_info.to_json, :routing_key => rabbit_properties["queue"])
+            rabbit_objects[:exchange].publish(event_info.to_json, :routing_key => rabbit_properties["queue"]["name"])
         end
     end
 

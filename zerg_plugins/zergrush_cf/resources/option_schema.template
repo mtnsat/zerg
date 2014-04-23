@@ -20,10 +20,35 @@
             "type": "object"
         },
         "queue": {
-            "type": "string"
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "params": {
+                    "type": "object"
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "additionalProperties": false
+
         },
         "exchange": {
-            "type": "string"
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "params": {
+                    "type": "object"
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "additionalProperties": false
         },
         "event_timestamp_name": {
             "type": "string"
