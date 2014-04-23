@@ -27,7 +27,8 @@ require 'excon'
 require 'rbconfig'
 require 'awesome_print'
 require 'securerandom'
-require "bunny"
+require 'bunny'
+require 'time'
 require_relative 'renderer'
 
 class CloudFormation < ZergGemPlugin::Plugin "/driver"
@@ -116,7 +117,7 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
         event_counter = 0
         while outputs_info.body["Stacks"][0]["StackStatus"] == "CREATE_IN_PROGRESS" do
             logEvents(events.first(events.length - event_counter))
-            logRabbitEvents(events.first(events.length - event_counter), rabbit_objects, task_hash["vm"]["driver"]["driveroptions"][0]["rabbit"]) 
+            logRabbitEvents(events.first(events.length - event_counter), rabbit_objects, eval_params(task_hash["vm"]["driver"]["driveroptions"][0]["rabbit"])) 
             event_counter = events.length
 
             events = cf.describe_stack_events(stack_name).body['StackEvents']
@@ -196,7 +197,7 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
         event_counter = 0
         while outputs_info.body["Stacks"][0]["StackStatus"] == "DELETE_IN_PROGRESS" do
             logEvents(events.first(events.length - event_counter))
-            logRabbitEvents(events.first(events.length - event_counter), rabbit_objects, task_hash["vm"]["driver"]["driveroptions"][0]["rabbit"]) 
+            logRabbitEvents(events.first(events.length - event_counter), rabbit_objects, eval_params(task_hash["vm"]["driver"]["driveroptions"][0]["rabbit"])) 
 
             event_counter = events.length
             begin
@@ -219,7 +220,7 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
 
     def logEvents events
         events.each do |event|
-            puts "Timestamp: #{event['Timestamp']}"
+            puts "Timestamp: #{Time.parse(event['Timestamp'].to_s).iso8601}"
             puts "LogicalResourceId: #{event['LogicalResourceId']}"
             puts "ResourceType: #{event['ResourceType']}"
             puts "ResourceStatus: #{event['ResourceStatus']}"
@@ -230,12 +231,13 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
 
     def initRabbitConnection rabbitInfo
         return nil unless rabbitInfo != nil
-        connection_string = "ampq://#{rabbitInfo["user"]}:#{rabbitInfo["password"]}@#{rabbitInfo["server"]}:#{rabbit_port}"
-        conn = Bunny.new(rabbitInfo["bunny_params"])
+        params = eval_params(rabbitInfo)
+        conn = Bunny.new(Hash[params["bunny_params"].map{ |k, v| [k.to_sym, v] }])
         conn.start
 
         channel = conn.create_channel
-        exch = (rabbitInfo["exchange"] == nil) ? channel.default_echange : channel.direct(rabbitInfo["exchange"])
+        exch = (params["exchange"] == nil) ? channel.default_echange : channel.direct(params["exchange"], { :durable => true })
+        channel.queue(rabbitInfo["queue"], { :durable => true }).bind(exch)
 
         return  { :connection => conn, :channel => channel, :exchange => exch }
     end
@@ -250,7 +252,7 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
 
         events.each do |event|
             event_info = {
-                timestamp.to_sym => "#{event['Timestamp']}",
+                timestamp.to_sym => "#{Time.parse(event['Timestamp'].to_s).iso8601}",
                 res_id_name.to_sym => "#{event['LogicalResourceId']}",
                 res_type_name.to_sym => "#{event['ResourceType']}",
                 res_status.to_sym => "#{event['ResourceStatus']}",

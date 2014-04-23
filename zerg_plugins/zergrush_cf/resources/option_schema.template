@@ -19,13 +19,27 @@
         "bunny_params": {
             "type": "object"
         },
-        "queue": "string",
-        "exchange": "string",
-        "event_timestamp_name": "string",
-        "event_resource_id_name": "string",
-        "event_resource_type_name": "string",
-        "event_resource_status_name": "string",
-        "event_resource_reason_name": "string"
+        "queue": {
+            "type": "string"
+        },
+        "exchange": {
+            "type": "string"
+        },
+        "event_timestamp_name": {
+            "type": "string"
+        },
+        "event_resource_id_name": {
+            "type": "string"
+        },
+        "event_resource_type_name": {
+            "type": "string"
+        },
+        "event_resource_status_name": {
+            "type": "string"
+        },
+        "event_resource_reason_name": {
+            "type": "string"
+        }
     },
     "required": [
         "bunny_params",
