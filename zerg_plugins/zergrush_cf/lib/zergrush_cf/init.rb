@@ -124,12 +124,17 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
             outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
             if outputs_info.body["Stacks"][0]["StackStatus"] == "CREATE_COMPLETE"
                 logEvents(events.first(events.length - event_counter))
+                logRabbitEvents(events.first(events.length - event_counter), rabbit_objects, eval_params(task_hash["vm"]["driver"]["driveroptions"][0]["rabbit"])) 
                 puts("Stack outputs:")
                 ap outputs_info.body["Stacks"][0]["Outputs"]
                 rabbit_objects[:connection].close unless rabbit_objects == nil
                 return 0
             end
         end
+
+        # log the remaining events for failure case
+        logEvents(events.first(events.length - event_counter))
+        logRabbitEvents(events.first(events.length - event_counter), rabbit_objects, eval_params(task_hash["vm"]["driver"]["driveroptions"][0]["rabbit"]))
 
         rabbit_objects[:connection].close unless rabbit_objects == nil
         abort("ERROR: Failed with stack status: #{outputs_info.body["Stacks"][0]["StackStatus"]}")
@@ -205,10 +210,15 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
                 outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
             rescue Fog::AWS::CloudFormation::NotFound
                 logEvents(events.first(events.length - event_counter))
+                logRabbitEvents(events.first(events.length - event_counter), rabbit_objects, eval_params(task_hash["vm"]["driver"]["driveroptions"][0]["rabbit"])) 
                 rabbit_objects[:connection].close unless rabbit_objects == nil
                 return 0
             end
         end
+
+        # log remaining events for error case
+        logEvents(events.first(events.length - event_counter))
+        logRabbitEvents(events.first(events.length - event_counter), rabbit_objects, eval_params(task_hash["vm"]["driver"]["driveroptions"][0]["rabbit"])) 
 
         rabbit_objects[:connection].close unless rabbit_objects == nil
         abort("ERROR: Failed with stack status: #{outputs_info.body["Stacks"][0]["StackStatus"]}")
