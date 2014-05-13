@@ -87,7 +87,11 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
 
         cf = Fog::AWS::CloudFormation.new(
             :aws_access_key_id => aws_key_id,
-            :aws_secret_access_key => aws_secret
+            :aws_secret_access_key => aws_secret,
+            :connection_options => {
+                :connect_timeout => 700,
+                :read_timeout => 700
+            }
         )
 
         # create the cloudformation stack
@@ -170,7 +174,11 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
 
         cf = Fog::AWS::CloudFormation.new(
             :aws_access_key_id => aws_key_id,
-            :aws_secret_access_key => aws_secret
+            :aws_secret_access_key => aws_secret,
+            :connection_options => {
+                :connect_timeout => 700,
+                :read_timeout => 700
+            }
         )
 
         stack_info = cf.delete_stack(stack_name)
