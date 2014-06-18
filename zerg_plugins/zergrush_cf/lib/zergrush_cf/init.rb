@@ -29,6 +29,7 @@ require 'awesome_print'
 require 'securerandom'
 require 'bunny'
 require 'time'
+require 'retries'
 require_relative 'renderer'
 
 class CloudFormation < ZergGemPlugin::Plugin "/driver"
@@ -85,6 +86,10 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
             end
         end
 
+        Excon.defaults[:connect_timeout] = 600
+        Excon.defaults[:read_timeout] = 600
+        Excon.defaults[:write_timeout] = 600
+
         cf = Fog::AWS::CloudFormation.new(
             :aws_access_key_id => aws_key_id,
             :aws_secret_access_key => aws_secret,
@@ -112,10 +117,15 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
             outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
         end
 
-        events = cf.describe_stack_events(stack_name).body['StackEvents']
-        while events == nil do
-            sleep 1 
+        events = nil
+        with_retries(:max_tries => 10, :base_sleep_seconds => 3, :max_sleep_seconds => 20, :rescue => Fog::AWS::CloudFormation::Error) {
             events = cf.describe_stack_events(stack_name).body['StackEvents']
+        }
+        while events == nil do
+            sleep 3
+            with_retries(:max_tries => 10, :base_sleep_seconds => 3, :max_sleep_seconds => 20, :rescue => Fog::AWS::CloudFormation::Error) {
+                events = cf.describe_stack_events(stack_name).body['StackEvents']
+            }
         end
 
         event_counter = 0
@@ -124,7 +134,9 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
             logRabbitEvents(events.first(events.length - event_counter), rabbit_objects, eval_params(task_hash["vm"]["driver"]["driveroptions"][0]["rabbit"])) 
             event_counter = events.length
 
-            events = cf.describe_stack_events(stack_name).body['StackEvents']
+            with_retries(:max_tries => 10, :base_sleep_seconds => 3, :max_sleep_seconds => 20, :rescue => Fog::AWS::CloudFormation::Error) {
+                events = cf.describe_stack_events(stack_name).body['StackEvents']
+            }
             outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
             if outputs_info.body["Stacks"][0]["StackStatus"] == "CREATE_COMPLETE"
                 logEvents(events.first(events.length - event_counter))
@@ -172,6 +184,10 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
         # run fog cleanup on the stack.
         stack_name = "#{task_name}"
 
+        Excon.defaults[:connect_timeout] = 600
+        Excon.defaults[:read_timeout] = 600
+        Excon.defaults[:write_timeout] = 600
+        
         cf = Fog::AWS::CloudFormation.new(
             :aws_access_key_id => aws_key_id,
             :aws_secret_access_key => aws_secret,
@@ -196,11 +212,16 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
             end
         end
 
-        events = cf.describe_stack_events(stack_name).body['StackEvents']
+        events = nil
+        with_retries(:max_tries => 10, :base_sleep_seconds => 3, :max_sleep_seconds => 20, :rescue => Fog::AWS::CloudFormation::Error) {
+            events = cf.describe_stack_events(stack_name).body['StackEvents']
+        }
         while events == nil do
-            sleep 1
+            sleep 3
             begin
-                events = cf.describe_stack_events(stack_name).body['StackEvents']
+                with_retries(:max_tries => 10, :base_sleep_seconds => 3, :max_sleep_seconds => 20, :rescue => Fog::AWS::CloudFormation::Error) {
+                    events = cf.describe_stack_events(stack_name).body['StackEvents']
+                }
             rescue Fog::AWS::CloudFormation::NotFound
                 rabbit_objects[:connection].close unless rabbit_objects == nil
                 return 0
@@ -214,7 +235,9 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
 
             event_counter = events.length
             begin
-                events = cf.describe_stack_events(stack_name).body['StackEvents']
+                with_retries(:max_tries => 10, :base_sleep_seconds => 3, :max_sleep_seconds => 20, :rescue => Fog::AWS::CloudFormation::Error) {
+                    events = cf.describe_stack_events(stack_name).body['StackEvents']
+                }
                 outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
             rescue Fog::AWS::CloudFormation::NotFound
                 logEvents(events.first(events.length - event_counter))
