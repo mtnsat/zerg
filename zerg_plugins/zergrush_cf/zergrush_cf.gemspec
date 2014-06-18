@@ -17,10 +17,11 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "bundler", ">= 1.0.0"
   s.add_development_dependency "rake"
-  s.add_development_dependency "zergrush", ">= 0.0.16"
+  s.add_development_dependency "zergrush", ">= 0.0.17"
 
   s.add_dependency "fog", ">=1.20.0"
   s.add_dependency "bunny", ">=1.2.1"
+  s.add_dependency "retries", ">=0.0.5"
 
   s.files        = `git ls-files`.split("\n")
   s.executables  = `git ls-files`.split("\n").map{|f| f =~ /^bin\/(.*)/ ? $1 : nil}.compact
