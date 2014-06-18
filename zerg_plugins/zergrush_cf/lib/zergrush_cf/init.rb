@@ -118,12 +118,12 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
         end
 
         events = nil
-        with_retries(:max_tries => 10, :base_sleep_seconds => 3, :max_sleep_seconds => 20, :rescue => Fog::AWS::CloudFormation::Error) {
+        with_retries(:max_tries => 10, :base_sleep_seconds => 3, :max_sleep_seconds => 20, :rescue => Fog::Errors::Error) {
             events = cf.describe_stack_events(stack_name).body['StackEvents']
         }
         while events == nil do
             sleep 3
-            with_retries(:max_tries => 10, :base_sleep_seconds => 3, :max_sleep_seconds => 20, :rescue => Fog::AWS::CloudFormation::Error) {
+            with_retries(:max_tries => 10, :base_sleep_seconds => 3, :max_sleep_seconds => 20, :rescue => Fog::Errors::Error) {
                 events = cf.describe_stack_events(stack_name).body['StackEvents']
             }
         end
@@ -134,7 +134,7 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
             logRabbitEvents(events.first(events.length - event_counter), rabbit_objects, eval_params(task_hash["vm"]["driver"]["driveroptions"][0]["rabbit"])) 
             event_counter = events.length
 
-            with_retries(:max_tries => 10, :base_sleep_seconds => 3, :max_sleep_seconds => 20, :rescue => Fog::AWS::CloudFormation::Error) {
+            with_retries(:max_tries => 10, :base_sleep_seconds => 3, :max_sleep_seconds => 20, :rescue => Fog::Errors::Error) {
                 events = cf.describe_stack_events(stack_name).body['StackEvents']
             }
             outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
@@ -213,13 +213,13 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
         end
 
         events = nil
-        with_retries(:max_tries => 10, :base_sleep_seconds => 3, :max_sleep_seconds => 20, :rescue => Fog::AWS::CloudFormation::Error) {
+        with_retries(:max_tries => 10, :base_sleep_seconds => 3, :max_sleep_seconds => 20, :rescue => Fog::Errors::Error) {
             events = cf.describe_stack_events(stack_name).body['StackEvents']
         }
         while events == nil do
             sleep 3
             begin
-                with_retries(:max_tries => 10, :base_sleep_seconds => 3, :max_sleep_seconds => 20, :rescue => Fog::AWS::CloudFormation::Error) {
+                with_retries(:max_tries => 10, :base_sleep_seconds => 3, :max_sleep_seconds => 20, :rescue => Fog::Errors::Error) {
                     events = cf.describe_stack_events(stack_name).body['StackEvents']
                 }
             rescue Fog::AWS::CloudFormation::NotFound
@@ -235,7 +235,7 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
 
             event_counter = events.length
             begin
-                with_retries(:max_tries => 10, :base_sleep_seconds => 3, :max_sleep_seconds => 20, :rescue => Fog::AWS::CloudFormation::Error) {
+                with_retries(:max_tries => 10, :base_sleep_seconds => 3, :max_sleep_seconds => 20, :rescue => Fog::Errors::Error) {
                     events = cf.describe_stack_events(stack_name).body['StackEvents']
                 }
                 outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
