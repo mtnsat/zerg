@@ -207,10 +207,17 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
 
          # get the event collection and initial info
         outputs_info = nil
+        with_retries(:max_tries => 10, :base_sleep_seconds => 3, :max_sleep_seconds => 20) {
+            begin
+                outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
+            rescue Fog::AWS::CloudFormation::NotFound
+                rabbit_objects[:connection].close unless rabbit_objects == nil
+                return 0
+            end
+        }
         while outputs_info == nil do
             sleep 3
             with_retries(:max_tries => 10, :base_sleep_seconds => 3, :max_sleep_seconds => 20) {
-                outputs_info = cf.describe_stacks({ 'StackName' => stack_name }) 
                 begin
                     outputs_info = cf.describe_stacks({ 'StackName' => stack_name })
                 rescue Fog::AWS::CloudFormation::NotFound
