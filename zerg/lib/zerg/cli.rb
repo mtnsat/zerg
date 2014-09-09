@@ -59,7 +59,8 @@ module Zerg
 
     class CLI < Thor 
         class_option :force, :type => :boolean, :banner => "force overwrite of files" 
-        class_option :debug, :type => :boolean, :banner => "add debug option to driver"  
+        class_option :debug, :type => :boolean, :banner => "add debug option to driver" 
+        class_option :base, :type => :string, :banner => "base name for the snapshot"  
 
         def self.exit_on_failure?
             true
@@ -83,6 +84,11 @@ module Zerg
         desc "halt [TASK]", "stops all task vm instances"
         def halt(task)
             puts Zerg::Runner.halt(task, options[:debug])
+        end
+
+        desc "snapshot [TASK]", "takes a snapshot of currently running vms"
+        def snapshot(task)
+            puts Zerg::Runner.snapshot(task, options[:base])
         end
           
         register(HiveCLI, 'hive', 'hive [COMMAND]', 'Manage hive - a collection of task descriptions.')
