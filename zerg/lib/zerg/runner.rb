@@ -82,5 +82,23 @@ module Zerg
             end
             puts("SUCCESS!")
         end
+
+        def self.snapshot(task, base)
+            # load the hive first
+            Zerg::Hive.instance.load
+
+            puts "Loaded hive. Looking for task #{task}..."
+            abort("ERROR: Task #{task} not found in current hive!") unless Zerg::Hive.instance.hive.has_key?(task) 
+
+            begin
+                pmgr = ZergGemPlugin::Manager.instance
+                pmgr.load
+                driver = pmgr.create("/driver/#{Zerg::Hive.instance.hive[task]["vm"]["driver"]["drivertype"]}")
+                driver.snapshot Zerg::Hive.instance.load_path, task, Zerg::Hive.instance.hive[task], base
+            rescue ZergGemPlugin::PluginNotLoaded
+                abort("ERROR: driver #{Zerg::Hive.instance.hive[task]["vm"]["driver"]["drivertype"]} not found. Did you install the plugin gem?")
+            end
+            puts("SUCCESS!")
+        end
     end
 end

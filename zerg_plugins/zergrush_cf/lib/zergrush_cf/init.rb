@@ -274,6 +274,81 @@ class CloudFormation < ZergGemPlugin::Plugin "/driver"
             abort ("ERROR: AWS error: #{fog_cf_error.ai}")
     end
 
+    def snapshot hive_location, task_name, task_hash, base
+        aws_key_id = task_hash["vm"]["driver"]["driveroptions"][0]["access_key_id"] 
+        aws_secret = task_hash["vm"]["driver"]["driveroptions"][0]["secret_access_key"]
+
+        # eval possible environment variables
+        if aws_key_id =~ /^ENV\['.+'\]$/
+            aws_key_id = eval(aws_key_id)
+        end
+
+        if aws_secret =~ /^ENV\['.+'\]$/
+            aws_secret = eval(aws_secret)
+        end 
+
+        abort("AWS key id is not specified in task") unless aws_key_id != nil
+        abort("AWS secret is not specified in task") unless aws_secret != nil
+
+        base_name = (base.nil?) ? "#{task_name}" : base
+
+        puts("creating AMI Snapshots of all EC2 instances. Will use base name of #{base_name}")
+
+        cf = Fog::AWS::CloudFormation.new(
+            :aws_access_key_id => aws_key_id,
+            :aws_secret_access_key => aws_secret
+        )
+
+        fogCompute = Fog::Compute.new(
+            :provider => 'AWS',
+            :aws_access_key_id => aws_key_id,
+            :aws_secret_access_key => aws_secret
+        )
+
+        rabbit_objects = initRabbitConnection(task_hash["vm"]["driver"]["driveroptions"][0]["rabbit"])
+
+        # create the cloudformation stack
+        stack_name = "#{task_name}"
+        processStack(stack_name, base_name, cf, fogCompute)
+        return 0
+
+        rescue Fog::Errors::Error => fog_cf_error
+            abort ("ERROR: AWS error: #{fog_cf_error.message}")
+    end
+
+    def processStack stack_name, base_name, fogCF, fogCompute
+        fogCF.describe_stack_resources({ 'StackName' => stack_name })[:body]['StackResources'].each { |stack_resource| 
+            if stack_resource['ResourceType'] == 'AWS::EC2::Instance'
+                saveAmi(stack_resource, base_name, fogCompute) 
+            elsif stack_resource['ResourceType'] == 'AWS::CloudFormation::Stack'
+                processStack(stack_resource['PhysicalResourceId'].split('/')[1], base_name, fogCF, fogCompute)
+            end
+        }
+    end
+
+    def saveAmi ec2res, base_name, fogCompute
+        liveInstance = fogCompute.describe_instances({ 'instance-id' => ec2res['PhysicalResourceId'] })[:body]
+        nameTag = liveInstance['reservationSet'][0]['instancesSet'][0]['tagSet']['Name'].split(':')[1].downcase
+
+        ap "Creating AMI #{base_name}-#{nameTag}. Stack resource:"
+        ap ec2res  
+
+        ap 'Checking if image already exists...'
+        imageSet = fogCompute.describe_images( { 'name' => "#{base_name}-#{nameTag}" } )[:body]
+        if imageSet['imagesSet'].length > 0
+            imageId = imageSet[0]['imageId']
+            ap "Deregistering old image #{imageId}..."
+            response = fogCompute.deregister_image(imageId)
+            abort("ERROR: deregistering #{imageId} failed!") unless response[:body]['return'] == true
+        end
+
+        ap 'Saving new image...'
+        newId = fogCompute.create_image(ec2res['PhysicalResourceId'], "#{base_name}-#{nameTag}", "#{base_name}-#{nameTag} snapshot")[:body]['imageId']
+        ap "Created new AMI #{newId}"
+        ap "Tagging #{newId} with #{base_name}"
+        fogCompute.create_tags(newId, { base_name => base_name })
+    end
+
     def logEvents events
         events.each do |event|
             puts "Timestamp: #{Time.parse(event['Timestamp'].to_s).iso8601}"

@@ -211,6 +211,10 @@ class Vagrant < ZergGemPlugin::Plugin "/driver"
         end
     end
 
+    def snapshot hive_location, task_name, task_hash, base
+        abort("ERROR: Not implemented!")
+    end
+
     def task_schema
         return File.open(File.join("#{File.dirname(__FILE__)}", "..", "..", "resources", "tasks_schema.template"), 'r').read
     end
