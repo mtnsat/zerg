@@ -31,6 +31,7 @@ Install [Vagrant]. Then:
 git clone git@github.com:MTNSatelliteComm/zerg.git zerg
 cd zerg/dev_env
 vagrant plugin install vagrant-berkshelf
+vagrant plugin install vagrant-butcher
 vagrant plugin install vagrant-omnibus
 vagrant up --provision
 vagrant ssh
